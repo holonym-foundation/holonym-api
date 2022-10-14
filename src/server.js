@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import "./init.js"; // for side effects
 import residence from "./routes/residence.js";
+import sybilResistance from "./routes/sybil-resistance.js";
 
 // ----------------------------
 // Setup express app
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/residence", residence);
+app.use("/sybil-resistance", sybilResistance);
 
 // ----------------------------
 // Run server

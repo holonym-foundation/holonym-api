@@ -21,7 +21,6 @@ async function getResidesInUS(req, res) {
   try {
     const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
     const isUSResident = await contract.usResidency(req.query.user);
-    console.log(isUSResident);
     return res.status(200).json({ result: isUSResident });
   } catch (err) {
     console.log(err);
