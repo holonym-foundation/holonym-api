@@ -1,0 +1,13 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.validate": ["javascript"],
+  "prettier.printWidth": 87,
+  "[javascript]": {
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.tabSize": 2
+  },
+  "python.defaultInterpreterPath": "/home/caleb/miniconda3/envs/py3.10/bin/python"
+}
