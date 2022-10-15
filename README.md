@@ -58,7 +58,7 @@ Get whether the user has performed the given action.
 
 If the user has not proven that they have performed the action or if the user has performed the action multiple times, then this endpoint will return false.
 
-See the following documentation for how to use action IDs: [How to get user's proofs](https://holonym.gitbook.io/holonym-alpha/usage/how-to-stop-sybil-attacks-using-holonym#how-to-get-the-proof).
+See the following documentation [How to get user's proofs](https://holonym.gitbook.io/holonym-alpha/usage/how-to-stop-sybil-attacks-using-holonym#how-to-get-the-proof) for how to use action IDs.
 
 - Parameters
 
