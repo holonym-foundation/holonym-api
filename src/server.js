@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import "./init.js"; // for side effects
+import merkleTree from "./routes/merkle-tree.js";
 import residence from "./routes/residence.js";
 import sybilResistance from "./routes/sybil-resistance.js";
 
@@ -19,6 +20,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/merkle-tree", merkleTree);
 app.use("/residence", residence);
 app.use("/sybil-resistance", sybilResistance);
 

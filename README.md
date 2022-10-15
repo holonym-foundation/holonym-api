@@ -6,8 +6,38 @@ Built so that projects can integrate Holo with two lines of code.
 
 For the `/residence/country/<country-code>` endpoints, `<country-code>` will be a 2-letter country code following the [ISO 3166 standard](https://www.iso.org/iso-3166-country-codes.html). Holonym currently only supports queries for US residency.
 
+- **GET** `/merkle-tree/leaves`
 - **GET** `/residence/country/us`
 - **GET** `/sybil-resistance`
+
+### **GET** `/merkle-tree/leaves`
+
+Get the leaves of the Holo Merkle tree (i.e., Anonymity Pool).
+
+This endpoint can be called when generating Merkle proofs.
+
+- Example
+
+  ```JavaScript
+  const resp = await fetch('http://localhost:3010/merkle-tree/leaves');
+  const { result: leaves } = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+  ```JSON
+  {
+      "result": [
+        "0x1747b1561951392e2c515c7a58fade696c455b3ddec3a545a8cc928f71d104f8",
+        "0x20ee87c5d3c27a081a23369dcb6f31bdd6f0dd7645aa5f349c4b46348250b62c",
+        "0x108c187c81c01ee547689d4a646969d8956c66db20a8fbf5523e69e63418882b",
+        ...
+      ],
+  }
+
+  ```
 
 ### **GET** `/residence/country/us?user=<user-address>`
 
@@ -30,26 +60,22 @@ Get whether the user resides in the US.
 
   - 200
 
-        Result if user resides in the US.
+    Result if user resides in the US.
 
     ```JSON
-
-      {
-          "result": true,
-      }
-
+    {
+        "result": true,
+    }
     ```
 
   - 200
 
-        Result if user has not submitted a valid proof that they reside in the US.
+    Result if user has not submitted a valid proof that they reside in the US.
 
     ```JSON
-
-      {
-          "result": false,
-      }
-
+    {
+        "result": false,
+    }
     ```
 
 ### **GET** `/sybil-resistance?user=<user-address>&action-id=<action-id>`
@@ -78,24 +104,20 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 
   - 200
 
-        Result if user has proven they have performed the action exactly once.
+    Result if user has proven they have performed the action exactly once.
 
     ```JSON
-
-      {
-          "result": true,
-      }
-
+    {
+        "result": true,
+    }
     ```
 
   - 200
 
-        Result if user has not submitted a valid proof.
+    Result if user has not submitted a valid proof.
 
     ```JSON
-
-      {
-          "result": false,
-      }
-
+    {
+        "result": false,
+    }
     ```
