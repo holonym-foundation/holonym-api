@@ -1,3 +1,7 @@
+REST API for retrieving data from Holonym smart contracts.
+
+Built so that projects can integrate Holo with two lines of code.
+
 ## Endpoints
 
 For the `/residence/country/<country-code>` endpoints, `<country-code>` will be a 2-letter country code following the [ISO 3166 standard](https://www.iso.org/iso-3166-country-codes.html). Holonym currently only supports queries for US residency.
@@ -17,8 +21,9 @@ Get whether the user resides in the US.
 
 - Example
 
-  ```bash
-  curl -X GET 'http://localhost:3010/residence/country/us?user=0x0000000000000000000000000000000000000000'
+  ```JavaScript
+  const resp = await fetch('http://localhost:3010/residence/country/us?user=0x0000000000000000000000000000000000000000');
+  const { result: isUSResident } = await resp.json();
   ```
 
 - Responses
@@ -64,8 +69,9 @@ See the following documentation for how to use action IDs: [How to get user's pr
 
 - Example
 
-  ```bash
-  curl -X GET 'http://localhost:3010/sybil-resistance?user=0x0000000000000000000000000000000000000000&action-id=12345678'
+  ```JavaScript
+  const resp = await fetch('http://localhost:3010/sybil-resistance?user=0x0000000000000000000000000000000000000000&action-id=12345678');
+  const { result: isUnique } = await resp.json();
   ```
 
 - Responses
