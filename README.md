@@ -4,8 +4,6 @@ Built so that projects can integrate Holo with two lines of code.
 
 ## Endpoints
 
-For the `/residence/country/<country-code>` endpoints, `<country-code>` will be a 2-letter country code following the [ISO 3166 standard](https://www.iso.org/iso-3166-country-codes.html). Holonym currently only supports queries for US residency.
-
 - **GET** `/merkle-tree/leaves`
 - **GET** `/residence/country/us`
 - **GET** `/sybil-resistance`
@@ -42,6 +40,8 @@ This endpoint can be called when generating Merkle proofs.
 ### **GET** `/residence/country/us?user=<user-address>`
 
 Get whether the user resides in the US.
+
+For the `/residence/country/<country-code>` endpoints, `<country-code>` will be a 2-letter country code following the [ISO 3166 standard](https://www.iso.org/iso-3166-country-codes.html). Holonym currently only supports queries for US residency.
 
 - Parameters
 
