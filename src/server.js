@@ -24,6 +24,11 @@ app.use("/merkle-tree", merkleTree);
 app.use("/residence", residence);
 app.use("/sybil-resistance", sybilResistance);
 
+app.get("/aws-health", (req, res) => {
+  console.log(`${new Date().toISOString()} GET /aws-health`);
+  return res.status(200).json({ healthy: true });
+});
+
 // ----------------------------
 // Run server
 // ----------------------------
