@@ -91,7 +91,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
   | name     | description               | type   | in    | required |
   | -------- | ------------------------- | ------ | ----- | -------- |
   | `user`   | User's blockchain address | string | query | true     |
-  | `app-id` | Action ID                 | string | query | true     |
+  | `app-id` | App ID                    | string | query | true     |
 
 - Example
 
@@ -103,8 +103,6 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 - Responses
 
   - 200
-
-    Result if user has proven they have performed the action exactly once.
 
     ```JSON
     {
