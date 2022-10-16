@@ -23,6 +23,10 @@ async function sybilResistance(req, res) {
     logWithTimestamp("sybilResistance: Invalid address. Exiting");
     return res.status(400).json({ error: "Invalid user address" });
   }
+  if (!!parseInt(req.query["app-id"])) {
+    logWithTimestamp("sybilResistance: Invalid app-id. Exiting");
+    return res.status(400).json({ error: "Invalid app-id" });
+  }
   const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
   try {
     const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
