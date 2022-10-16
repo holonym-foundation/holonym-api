@@ -78,25 +78,25 @@ For the `/residence/country/<country-code>` endpoints, `<country-code>` will be 
     }
     ```
 
-### **GET** `/sybil-resistance?user=<user-address>&action-id=<action-id>`
+### **GET** `/sybil-resistance?user=<user-address>&app-id=<app-id>`
 
-Get whether the user has performed the given action.
+Get whether the user has registered for the given app-id.
 
-If the user has not proven that they have performed the action or if the user has performed the action multiple times, then this endpoint will return false.
+When a user "registers", they are establishing that the given blockchain address is a unique person for the app ID. See the section [Sybil resistance](#sybil-resistance) for more information about how app IDs can be used.
 
-See the following documentation [How to get user's proofs](https://holonym.gitbook.io/holonym-alpha/usage/how-to-stop-sybil-attacks-using-holonym#how-to-get-the-proof) for how to use action IDs.
+See the following documentation [How to get user's proofs](https://holonym.gitbook.io/holonym-alpha/usage/how-to-stop-sybil-attacks-using-holonym#how-to-get-the-proof) for how to use app IDs.
 
 - Parameters
 
-  | name        | description               | type   | in    | required |
-  | ----------- | ------------------------- | ------ | ----- | -------- |
-  | `user`      | User's blockchain address | string | query | true     |
-  | `action-id` | Action ID                 | string | query | true     |
+  | name     | description               | type   | in    | required |
+  | -------- | ------------------------- | ------ | ----- | -------- |
+  | `user`   | User's blockchain address | string | query | true     |
+  | `app-id` | Action ID                 | string | query | true     |
 
 - Example
 
   ```JavaScript
-  const resp = await fetch('http://localhost:3010/sybil-resistance?user=0x0000000000000000000000000000000000000000&action-id=12345678');
+  const resp = await fetch('http://localhost:3010/sybil-resistance?user=0x0000000000000000000000000000000000000000&app-id=12345678');
   const { result: isUnique } = await resp.json();
   ```
 
@@ -121,3 +121,19 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
         "result": false,
     }
     ```
+
+## Sybil resistance
+
+The `sybil-resistance` endpoint uses blockchain-address + app-id pairings to establish uniqueness.
+
+<!-- A user who has registered the blockchain-address + app-id pairing *x* has established that, for the app-id, no other blockchain address that has registered with this app-id is controlled by the person who controls the address in *x*. -->
+
+You can use the app-id to designate something other than an app. You could create one app-id for one part of your app and another app-id for a different part. The purpose of this is to preserve user privacy. You could, for example, require that users register for the airdrop portion of your app (one app-id) and that they register separately for voting (another app-id); by doing this, you can perform Sybil-resistant airdrops and Sybil-resistant voting without creating links between the blockchain accounts that received airdrops and the accounts that voted.
+
+<!-- TODO: Create a tree graph of variably global app ids, e.g.,...
+
+    -- global_app_id
+       |--- app-1
+       |    |--- sub-app-1
+       |    |--- sub-app-2
+       |--- app-2 -->

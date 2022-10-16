@@ -13,11 +13,11 @@ async function sybilResistance(req, res) {
       .status(400)
       .json({ error: "Request query params do not include user address" });
   }
-  if (!req.query["action-id"]) {
-    logWithTimestamp("sybilResistance: No action-id in query params. Exiting");
+  if (!req.query["app-id"]) {
+    logWithTimestamp("sybilResistance: No app-id in query params. Exiting");
     return res
       .status(400)
-      .json({ error: "Request query params do not include action-id" });
+      .json({ error: "Request query params do not include app-id" });
   }
   if (!assertValidAddress(req.query.user)) {
     logWithTimestamp("sybilResistance: Invalid address. Exiting");
@@ -28,7 +28,7 @@ async function sybilResistance(req, res) {
     const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
     const isUnique = await contract.isUniqueForAction(
       req.query.user,
-      req.query["action-id"]
+      req.query["app-id"]
     );
     return res.status(200).json({ result: isUnique });
   } catch (err) {
