@@ -10,11 +10,11 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  ECS_SERVICE: holonym-api-service
-  ECS_CLUSTER: holonym-api
-  CONTAINER_NAME: holonym--api
+  ECS_SERVICE: holonym-api-ecs-service
+  ECS_CLUSTER: holonym-api-ecs-cluster
+  CONTAINER_NAME: holonym-api
   IMAGE_NAME: holonym/holonym-api:latest
-  IAM_ROLE: arn:aws:iam::130486779388:role/github-actions-role
+  IAM_ROLE: arn:aws:iam::995485873142:role/github-actions-role
 
 jobs:
   # Build Docker image and push to Docker Hub
