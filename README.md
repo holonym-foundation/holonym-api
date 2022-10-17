@@ -17,7 +17,7 @@ This endpoint can be called when generating Merkle proofs.
 - Example
 
   ```JavaScript
-  const resp = await fetch('http://localhost:3010/merkle-tree/leaves');
+  const resp = await fetch('https://api.holonym.io/merkle-tree/leaves');
   const { result: leaves } = await resp.json();
   ```
 
@@ -52,7 +52,7 @@ For the `/residence/country/<country-code>` endpoints, `<country-code>` will be 
 - Example
 
   ```JavaScript
-  const resp = await fetch('http://localhost:3010/residence/country/us?user=0x0000000000000000000000000000000000000000');
+  const resp = await fetch('https://api.holonym.io/residence/country/us?user=0x0000000000000000000000000000000000000000');
   const { result: isUSResident } = await resp.json();
   ```
 
@@ -96,7 +96,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 - Example
 
   ```JavaScript
-  const resp = await fetch('http://localhost:3010/sybil-resistance?user=0x0000000000000000000000000000000000000000&action-id=12345678');
+  const resp = await fetch('https://api.holonym.io/sybil-resistance?user=0x0000000000000000000000000000000000000000&action-id=12345678');
   const { result: isUnique } = await resp.json();
   ```
 
