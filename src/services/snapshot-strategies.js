@@ -4,6 +4,7 @@ import { thisAddress, provider } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
 import contractAddresses from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
+import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 
 /**
  * NOTE: Does not support network or snapshot params. This endpoint only queries
@@ -43,4 +44,62 @@ async function residesInUS(req, res) {
   return res.status(200).json({ score: scores });
 }
 
-export { residesInUS };
+/**
+ * NOTE: Does not support network or snapshot params. This endpoint only queries
+ * Optimism Goerli, and it checks the contract _at the time the endpoint is called_,
+ * not at the time of the given snapshot.
+ *
+ * Query params: network, snapshot, addresses.
+ *
+ * See the "api" Snapshot strategy for strategy implementation
+ * (repo: https://github.com/snapshot-labs/snapshot-strategies)
+ *
+ * action-id param must be passed as to options.additionalParameters in strategy.
+ * For example, "action-id=123"
+ */
+async function sybilResistance(req, res) {
+  logWithTimestamp("strategies/sybilResistance: Entered");
+  if (!req.query.addresses) {
+    logWithTimestamp(
+      "strategies/sybilResistance: No addresses in query params. Exiting"
+    );
+    return res
+      .status(400)
+      .json({ error: "Request query params do not include addresses" });
+  }
+  if (!req.query["action-id"]) {
+    logWithTimestamp("sybilResistance: No action-id in request route params. Exiting");
+    return res
+      .status(400)
+      .json({ error: "Request route params do not include action-id" });
+  }
+  if (!parseInt(req.query["action-id"])) {
+    logWithTimestamp(
+      `sybilResistance: Invalid action-id ${req.query["action-id"]}. Exiting`
+    );
+    return res.status(400).json({ error: "Invalid action-id" });
+  }
+  const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
+  const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
+
+  let scores = [];
+  const addresses = req.query.addresses.split(",");
+  for (const address of addresses) {
+    try {
+      const isUnique = await contract.isUniqueForAction(
+        address,
+        req.query["action-id"]
+      );
+      scores.push({ address: address, score: isUnique ? 1 : 0 });
+    } catch (err) {
+      console.log(err);
+      logWithTimestamp(
+        `strategies/sybilResistance: Encountered error while calling smart contract for address ${address}. Exiting`
+      );
+      return res.status(500).json({ error: "An unexpected error occured" });
+    }
+  }
+  return res.status(200).json({ score: scores });
+}
+
+export { residesInUS, sybilResistance };

@@ -23,7 +23,7 @@ async function sybilResistance(req, res) {
     logWithTimestamp("sybilResistance: Invalid address. Exiting");
     return res.status(400).json({ error: "Invalid user address" });
   }
-  if (!!parseInt(req.query["action-id"])) {
+  if (!parseInt(req.query["action-id"])) {
     logWithTimestamp("sybilResistance: Invalid action-id. Exiting");
     return res.status(400).json({ error: "Invalid action-id" });
   }
