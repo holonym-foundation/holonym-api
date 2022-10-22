@@ -141,7 +141,7 @@ Every score is either 1 or 0.
 | 1     | Address has proven US residency       |
 | 0     | Address has _not_ proven US residency |
 
-### Use with Snapshot
+#### Use with Snapshot
 
 To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tree/master/src/strategies/api) Snapshot strategy, specify the strategy parameters using the following format.
 
@@ -152,7 +152,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
       "strategy": "us-residency"
     }
 
-### Use without Snapshot
+#### Use without Snapshot
 
 - Parameters
 
@@ -199,7 +199,7 @@ Every score is either 1 or 0.
 | 1     | Address has proven uniqueness for action-id       |
 | 0     | Address has _not_ proven uniqueness for action-id |
 
-### Use with Snapshot
+#### Use with Snapshot
 
 To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tree/master/src/strategies/api) Snapshot strategy, specify the strategy parameters using the following format. Replace `123` with your action-id.
 
@@ -211,7 +211,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
       "additionalParameters": "action-id=123"
     }
 
-### Use without Snapshot
+#### Use without Snapshot
 
 - Parameters
 
