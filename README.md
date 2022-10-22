@@ -13,6 +13,8 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/merkle-tree/leaves`
 - **GET** `/residence/country/us`
 - **GET** `/sybil-resistance`
+- **GET** `/snapshot-strategies/us-residency`
+- **GET** `/snapshot-strategies/sybil-resistance`
 
 ### **GET** `/merkle-tree/leaves`
 
@@ -123,6 +125,125 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
     ```JSON
     {
         "result": false,
+    }
+    ```
+
+### **GET** `/snapshot-strategies/us-residency?network=<network>&snapshot=<snapshot>&addresses=<addresses>`
+
+<!-- TODO: Add endpoint that returns 1 if user is *not* a US resident and 0 otherwise -->
+
+Returns a list of scores indicating, for each address, whether the address has submitted a valid and unique proof of US residency.
+
+Every score is either 1 or 0.
+
+| score | description                           |
+| ----- | ------------------------------------- |
+| 1     | Address has proven US residency       |
+| 0     | Address has _not_ proven US residency |
+
+### Use with Snapshot
+
+To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tree/master/src/strategies/api) Snapshot strategy, specify the strategy parameters using the following format.
+
+    {
+      "api": "https://api.holonym.io",
+      "symbol": "",
+      "decimals": 0,
+      "strategy": "us-residency"
+    }
+
+### Use without Snapshot
+
+- Parameters
+
+  | name        | description                                    | type   | in    | required |
+  | ----------- | ---------------------------------------------- | ------ | ----- | -------- |
+  | `network`   | Chain ID                                       | string | query | true     |
+  | `snapshot`  | Block height                                   | string | query | true     |
+  | `addresses` | List of blockchain address separated by commas | string | query | true     |
+
+- Example
+
+  ```JavaScript
+  const resp = await fetch('https://api.holonym.io/snapshot-strategies/us-residency?network=420&snapshot=9001&addresses=0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001');
+  const data = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+      "score" : [
+          {
+            "address" : "0x0000000000000000000000000000000000000000",
+            "score" : 0
+          },
+          {
+            "address" : "0x0000000000000000000000000000000000000001",
+            "score" : 1
+          }
+      ]
+    }
+    ```
+
+### **GET** `/snapshot-strategies/sybil-resistance?network=<network>&snapshot=<snapshot>&addresses=<addresses>&action-id=<action-id>`
+
+Returns a list of scores indicating, for each address, whether the address has submitted a valid proof of uniqueness for the given action-id.
+
+Every score is either 1 or 0.
+
+| score | description                                       |
+| ----- | ------------------------------------------------- |
+| 1     | Address has proven uniqueness for action-id       |
+| 0     | Address has _not_ proven uniqueness for action-id |
+
+### Use with Snapshot
+
+To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tree/master/src/strategies/api) Snapshot strategy, specify the strategy parameters using the following format. Replace `123` with your action-id.
+
+    {
+      "api": "https://api.holonym.io",
+      "symbol": "",
+      "decimals": 0,
+      "strategy": "us-residency",
+      "additionalParameters": "action-id=123"
+    }
+
+### Use without Snapshot
+
+- Parameters
+
+  | name        | description                                    | type   | in    | required |
+  | ----------- | ---------------------------------------------- | ------ | ----- | -------- |
+  | `network`   | Chain ID                                       | string | query | true     |
+  | `snapshot`  | Block height                                   | string | query | true     |
+  | `addresses` | List of blockchain address separated by commas | string | query | true     |
+
+- Example
+
+  ```JavaScript
+  const resp = await fetch('https://api.holonym.io/snapshot-strategies/sybil-resistance?network=420&snapshot=9001&addresses=0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001&action-id=123');
+  const data = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+      "score" : [
+          {
+            "address" : "0x0000000000000000000000000000000000000000",
+            "score" : 0
+          },
+          {
+            "address" : "0x0000000000000000000000000000000000000001",
+            "score" : 1
+          }
+      ]
     }
     ```
 

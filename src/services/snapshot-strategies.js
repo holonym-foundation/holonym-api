@@ -49,7 +49,7 @@ async function residesInUS(req, res) {
  * Optimism Goerli, and it checks the contract _at the time the endpoint is called_,
  * not at the time of the given snapshot.
  *
- * Query params: network, snapshot, addresses.
+ * Query params: network, snapshot, addresses, action-id.
  *
  * See the "api" Snapshot strategy for strategy implementation
  * (repo: https://github.com/snapshot-labs/snapshot-strategies)
