@@ -13,7 +13,7 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/merkle-tree/leaves`
 - **GET** `/residence/country/us`
 - **GET** `/sybil-resistance`
-- **GET** `/snapshot-strategies/us-residency`
+- **GET** `/snapshot-strategies/residence/country/us`
 - **GET** `/snapshot-strategies/sybil-resistance`
 
 ### **GET** `/merkle-tree/leaves`
@@ -128,7 +128,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
     }
     ```
 
-### **GET** `/snapshot-strategies/us-residency?network=<network>&snapshot=<snapshot>&addresses=<addresses>`
+### **GET** `/snapshot-strategies/residence/country/us?network=<network>&snapshot=<snapshot>&addresses=<addresses>`
 
 <!-- TODO: Add endpoint that returns 1 if user is *not* a US resident and 0 otherwise -->
 
@@ -149,7 +149,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
       "api": "https://api.holonym.io",
       "symbol": "",
       "decimals": 0,
-      "strategy": "us-residency"
+      "strategy": "/residence/country/us"
     }
 
 #### Use without Snapshot
@@ -165,7 +165,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
 - Example
 
   ```JavaScript
-  const resp = await fetch('https://api.holonym.io/snapshot-strategies/us-residency?network=420&snapshot=9001&addresses=0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001');
+  const resp = await fetch('https://api.holonym.io/snapshot-strategies/residence/country/us?network=420&snapshot=9001&addresses=0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001');
   const data = await resp.json();
   ```
 
@@ -207,7 +207,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
       "api": "https://api.holonym.io",
       "symbol": "",
       "decimals": 0,
-      "strategy": "us-residency",
+      "strategy": "/sybil-resistance",
       "additionalParameters": "action-id=123"
     }
 
