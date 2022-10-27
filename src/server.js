@@ -26,6 +26,18 @@ app.use("/residence", residence);
 app.use("/sybil-resistance", sybilResistance);
 app.use("/snapshot-strategies", snapshotStrategies);
 
+app.get("/", (req, res) => {
+  console.log(`${new Date().toISOString()} GET /`);
+  const routes = [
+    "GET /merkle-tree/leaves",
+    "GET /residence/country/us",
+    "GET /sybil-resistance",
+    "GET /snapshot-strategies/residence/country/us",
+    "GET /snapshot-strategies/sybil-resistance",
+  ];
+  res.status(200).json({ routes: routes });
+});
+
 app.get("/aws-health", (req, res) => {
   console.log(`${new Date().toISOString()} GET /aws-health`);
   return res.status(200).json({ healthy: true });
