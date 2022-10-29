@@ -201,14 +201,14 @@ Every score is either 1 or 0.
 
 #### Use with Snapshot
 
-To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tree/master/src/strategies/api) Snapshot strategy, specify the strategy parameters using the following format. Replace `123` with your action-id.
+To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tree/master/src/strategies/api) Snapshot strategy, specify the strategy parameters using the following format. We suggest that you use the default action-id `123456789`. If you are using a different action-id, replace `123456789` with your action-id.
 
     {
       "api": "https://api.holonym.io",
       "symbol": "",
       "decimals": 0,
       "strategy": "/sybil-resistance",
-      "additionalParameters": "action-id=123"
+      "additionalParameters": "action-id=123456789"
     }
 
 #### Use without Snapshot
