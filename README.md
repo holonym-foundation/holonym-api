@@ -251,6 +251,8 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
 
 The `sybil-resistance` endpoint uses blockchain-address + action-id pairings to establish uniqueness.
 
+**We suggest that you use the default action-id `123456789`.**
+
 <!-- A user who has registered the blockchain-address + action-id pairing *x* has established that, for the action-id, no other blockchain address that has registered with this action-id is controlled by the person who controls the address in *x*. -->
 
 You can use the action-id to designate something other than an action. You could create one action-id for one part of your action and another action-id for a different part. The purpose of this is to preserve user privacy. You could, for example, require that users register for the airdrop portion of your action (one action-id) and that they register separately for voting (another action-id); by doing this, you can perform Sybil-resistant airdrops and Sybil-resistant voting without creating links between the blockchain accounts that received airdrops and the accounts that voted.
