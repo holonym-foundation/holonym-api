@@ -149,7 +149,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
       "api": "https://api.holonym.io",
       "symbol": "",
       "decimals": 0,
-      "strategy": "/residence/country/us"
+      "strategy": "snapshot-strategies/residence/country/us"
     }
 
 #### Use without Snapshot
@@ -207,7 +207,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
       "api": "https://api.holonym.io",
       "symbol": "",
       "decimals": 0,
-      "strategy": "/sybil-resistance",
+      "strategy": "snapshot-strategies/sybil-resistance",
       "additionalParameters": "action-id=123456789"
     }
 
