@@ -5,6 +5,7 @@ import merkleTree from "./routes/merkle-tree.js";
 import residence from "./routes/residence.js";
 import sybilResistance from "./routes/sybil-resistance.js";
 import snapshotStrategies from "./routes/snapshot-strategies.js";
+import metrics from "./routes/metrics.js";
 
 // ----------------------------
 // Setup express app
@@ -25,6 +26,7 @@ app.use("/merkle-tree", merkleTree);
 app.use("/residence", residence);
 app.use("/sybil-resistance", sybilResistance);
 app.use("/snapshot-strategies", snapshotStrategies);
+app.use("/metrics", metrics);
 
 app.get("/", (req, res) => {
   console.log(`${new Date().toISOString()} GET /`);
