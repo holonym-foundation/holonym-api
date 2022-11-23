@@ -2,7 +2,7 @@ import express from "express";
 import { ethers } from "ethers";
 import { thisAddress, provider } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
-import { defaultActionId } from "../utils/constants.js";
+import { defaultActionId } from "../constants/misc.js";
 import contractAddresses from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
