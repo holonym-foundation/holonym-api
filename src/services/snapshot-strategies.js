@@ -2,6 +2,7 @@ import express from "express";
 import { ethers } from "ethers";
 import { thisAddress, provider } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
+import { defaultActionId } from "../utils/constants.js";
 import contractAddresses from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
@@ -67,18 +68,11 @@ async function sybilResistance(req, res) {
       .status(400)
       .json({ error: "Request query params do not include addresses" });
   }
-  if (!req.query["action-id"]) {
-    logWithTimestamp("sybilResistance: No action-id in request route params. Exiting");
-    return res
-      .status(400)
-      .json({ error: "Request route params do not include action-id" });
-  }
-  if (!parseInt(req.query["action-id"])) {
-    logWithTimestamp(
-      `sybilResistance: Invalid action-id ${req.query["action-id"]}. Exiting`
-    );
-    return res.status(400).json({ error: "Invalid action-id" });
-  }
+  const actionId =
+    typeof req.query?.["action-id"] == "number"
+      ? parseInt(req.query?.["action-id"])
+      : defaultActionId;
+
   const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
   const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
 
@@ -86,10 +80,7 @@ async function sybilResistance(req, res) {
   const addresses = req.query.addresses.split(",");
   for (const address of addresses) {
     try {
-      const isUnique = await contract.isUniqueForAction(
-        address,
-        req.query["action-id"]
-      );
+      const isUnique = await contract.isUniqueForAction(address, actionId);
       scores.push({ address: address, score: isUnique ? 1 : 0 });
     } catch (err) {
       console.log(err);
