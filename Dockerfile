@@ -1,4 +1,4 @@
-FROM node:18.9.0-bullseye-slim
+FROM node:16.14.2-bullseye-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
 
