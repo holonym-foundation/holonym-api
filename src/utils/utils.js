@@ -71,3 +71,43 @@ export function fillInDates(data) {
     }
   });
 }
+
+/**
+ * @param {Array<ethers.Event>} events
+ * @param {number} startTime Unix timestamp representing day at which timeseries should start
+ */
+export async function convertEventsToTimeseries(events, startTime) {
+  const eventsWithTimestamps = startTime ? [{ timestamp: startTime }] : [];
+  let eventCount = 1;
+  for (const event of events) {
+    const block = await event.getBlock();
+    eventsWithTimestamps.push({
+      ...event,
+      timestamp: block.timestamp * 1000,
+      total: eventCount,
+      // dateStr: dateToMonthDayYearStr(new Date(block.timestamp * 1000)),
+    });
+    eventCount += 1;
+  }
+  const dataWithFilledInDates = fillInDates(eventsWithTimestamps).map((item) => ({
+    ...item,
+    dateStr: dateToMonthDayYearStr(new Date(item.timestamp)),
+  }));
+  const dataWithoutDuplicateDays = [];
+  const uniqueDateStrings = [
+    ...new Set(dataWithFilledInDates.map((item) => item.dateStr)),
+  ];
+  for (let i = dataWithFilledInDates.length - 1; i > 0; i--) {
+    const thisDateStr = dataWithFilledInDates[i].dateStr;
+    if (uniqueDateStrings.includes(thisDateStr)) {
+      dataWithoutDuplicateDays.push(dataWithFilledInDates[i]);
+      delete uniqueDateStrings[uniqueDateStrings.indexOf(thisDateStr)];
+    }
+    // fill in totals for dates added
+    if (!dataWithFilledInDates[i].total) {
+      dataWithFilledInDates[i].total = 0;
+    }
+  }
+
+  return dataWithoutDuplicateDays.reverse();
+}

@@ -4,12 +4,14 @@ import { thisAddress, provider } from "../init.js";
 import {
   logWithTimestamp,
   dateToMonthDayYearStr,
-  fillInDates,
+  convertEventsToTimeseries,
 } from "../utils/utils.js";
 import contractAddresses from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import MerkleTreeABI from "../constants/MerkleTreeABI.js";
+
+const timeseriesStartDate = new Date("Sep 28 2022").getTime();
 
 async function usResidencyTotalCount(req, res) {
   logWithTimestamp("usResidencyTotalCount: Entered");
@@ -45,36 +47,11 @@ async function usResidencyTimeseries(req, res) {
   try {
     const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
     const usResidencyEvents = await contract.queryFilter("USResidency");
-    // TODO: Make the rest of this a separate function; this code is copied/pasted into the other timeseries endpoints
-    const eventsWithTimestamps = [];
-    let eventCount = 1;
-    for (const event of usResidencyEvents) {
-      const block = await event.getBlock();
-      eventsWithTimestamps.push({
-        ...event,
-        timestamp: block.timestamp * 1000,
-        total: eventCount,
-        // dateStr: dateToMonthDayYearStr(new Date(block.timestamp * 1000)),
-      });
-      eventCount += 1;
-    }
-    const dataWithFilledInDates = fillInDates(eventsWithTimestamps).map((item) => ({
-      ...item,
-      dateStr: dateToMonthDayYearStr(new Date(item.timestamp)),
-    }));
-    const dataWithoutDuplicateDays = [];
-    const uniqueDateStrings = [
-      ...new Set(dataWithFilledInDates.map((item) => item.dateStr)),
-    ];
-    for (let i = dataWithFilledInDates.length - 1; i > 0; i--) {
-      const thisDateStr = dataWithFilledInDates[i].dateStr;
-      if (uniqueDateStrings.includes(thisDateStr)) {
-        dataWithoutDuplicateDays.push(dataWithFilledInDates[i]);
-        delete uniqueDateStrings[uniqueDateStrings.indexOf(thisDateStr)];
-      }
-    }
-    const orderedDataWithoutDuplicates = dataWithoutDuplicateDays.reverse();
-    return res.status(200).json({ result: orderedDataWithoutDuplicates });
+    const timeseries = await convertEventsToTimeseries(
+      usResidencyEvents,
+      timeseriesStartDate
+    );
+    return res.status(200).json({ result: timeseries });
   } catch (err) {
     console.log(err);
     logWithTimestamp(
@@ -118,35 +95,11 @@ async function sybilResistanceTimeseries(req, res) {
   try {
     const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
     const uniquenessEvents = await contract.queryFilter("Uniqueness");
-    const eventsWithTimestamps = [];
-    let eventCount = 1;
-    for (const event of uniquenessEvents) {
-      const block = await event.getBlock();
-      eventsWithTimestamps.push({
-        ...event,
-        timestamp: block.timestamp * 1000,
-        total: eventCount,
-        // dateStr: dateToMonthDayYearStr(new Date(block.timestamp * 1000)),
-      });
-      eventCount += 1;
-    }
-    const dataWithFilledInDates = fillInDates(eventsWithTimestamps).map((item) => ({
-      ...item,
-      dateStr: dateToMonthDayYearStr(new Date(item.timestamp)),
-    }));
-    const dataWithoutDuplicateDays = [];
-    const uniqueDateStrings = [
-      ...new Set(dataWithFilledInDates.map((item) => item.dateStr)),
-    ];
-    for (let i = dataWithFilledInDates.length - 1; i > 0; i--) {
-      const thisDateStr = dataWithFilledInDates[i].dateStr;
-      if (uniqueDateStrings.includes(thisDateStr)) {
-        dataWithoutDuplicateDays.push(dataWithFilledInDates[i]);
-        delete uniqueDateStrings[uniqueDateStrings.indexOf(thisDateStr)];
-      }
-    }
-    const orderedDataWithoutDuplicates = dataWithoutDuplicateDays.reverse();
-    return res.status(200).json({ result: orderedDataWithoutDuplicates });
+    const timeseries = await convertEventsToTimeseries(
+      uniquenessEvents,
+      timeseriesStartDate
+    );
+    return res.status(200).json({ result: timeseries });
   } catch (err) {
     console.log(err);
     logWithTimestamp(
@@ -172,36 +125,12 @@ async function leavesTimeseries(req, res) {
   const contractAddr = contractAddresses["optimistic-goerli"]["MerkleTree"];
   try {
     const contract = new ethers.Contract(contractAddr, MerkleTreeABI, provider);
-    const uniquenessEvents = await contract.queryFilter("LeafInserted");
-    const eventsWithTimestamps = [];
-    let eventCount = 1;
-    for (const event of uniquenessEvents) {
-      const block = await event.getBlock();
-      eventsWithTimestamps.push({
-        ...event,
-        timestamp: block.timestamp * 1000,
-        total: eventCount,
-        // dateStr: dateToMonthDayYearStr(new Date(block.timestamp * 1000)),
-      });
-      eventCount += 1;
-    }
-    const dataWithFilledInDates = fillInDates(eventsWithTimestamps).map((item) => ({
-      ...item,
-      dateStr: dateToMonthDayYearStr(new Date(item.timestamp)),
-    }));
-    const dataWithoutDuplicateDays = [];
-    const uniqueDateStrings = [
-      ...new Set(dataWithFilledInDates.map((item) => item.dateStr)),
-    ];
-    for (let i = dataWithFilledInDates.length - 1; i > 0; i--) {
-      const thisDateStr = dataWithFilledInDates[i].dateStr;
-      if (uniqueDateStrings.includes(thisDateStr)) {
-        dataWithoutDuplicateDays.push(dataWithFilledInDates[i]);
-        delete uniqueDateStrings[uniqueDateStrings.indexOf(thisDateStr)];
-      }
-    }
-    const orderedDataWithoutDuplicates = dataWithoutDuplicateDays.reverse();
-    return res.status(200).json({ result: orderedDataWithoutDuplicates });
+    const leafInsertedEvents = await contract.queryFilter("LeafInserted");
+    const timeseries = await convertEventsToTimeseries(
+      leafInsertedEvents,
+      timeseriesStartDate
+    );
+    return res.status(200).json({ result: timeseries });
   } catch (err) {
     console.log(err);
     logWithTimestamp(
