@@ -8,16 +8,13 @@ import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 
 /**
- * NOTE: Does not support network or snapshot params. This endpoint only queries
- * Optimism Goerli, and it checks the contract _at the time the endpoint is called_,
- * not at the time of the given snapshot.
- *
  * Query params: network, snapshot, addresses.
  *
  * See the "api" Snapshot strategy for strategy implementation
  * (repo: https://github.com/snapshot-labs/snapshot-strategies)
  */
 async function residesInUS(req, res) {
+  // TODO: Add support for `network` param
   logWithTimestamp("strategies/residesInUS: Entered");
   if (!req.query.addresses) {
     logWithTimestamp("strategies/residesInUS: No addresses in query params. Exiting");
@@ -25,14 +22,31 @@ async function residesInUS(req, res) {
       .status(400)
       .json({ error: "Request query params do not include addresses" });
   }
+  if (!req.query.snapshot) {
+    logWithTimestamp("strategies/residesInUS: No snapshot in query params. Exiting");
+    return res
+      .status(400)
+      .json({ error: "Request query params do not include snapshot" });
+  }
+  const snapshot = parseInt(req.query.snapshot);
+  const currentBlockNumber = await provider.getBlockNumber();
+  if (snapshot < 0 || snapshot > currentBlockNumber) {
+    logWithTimestamp("strategies/residesInUS: Snapshot is invalid. Exiting");
+    return res.status(400).json({ error: "Snapshot is invalid" });
+  }
+
   const contractAddr = contractAddresses["optimistic-goerli"]["ResidencyStore"];
   const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
+
+  const overrides = {
+    blockTag: parseInt(req.query.snapshot),
+  };
 
   let scores = [];
   const addresses = req.query.addresses.split(",");
   for (const address of addresses) {
     try {
-      const isUSResident = await contract.usResidency(address);
+      const isUSResident = await contract.usResidency(address, overrides);
       scores.push({ address: address, score: isUSResident ? 1 : 0 });
     } catch (err) {
       console.log(err);
@@ -59,6 +73,7 @@ async function residesInUS(req, res) {
  * For example, "action-id=123"
  */
 async function sybilResistance(req, res) {
+  // TODO: Add support for `network` param
   logWithTimestamp("strategies/sybilResistance: Entered");
   if (!req.query.addresses) {
     logWithTimestamp(
@@ -68,19 +83,36 @@ async function sybilResistance(req, res) {
       .status(400)
       .json({ error: "Request query params do not include addresses" });
   }
+  if (!req.query.snapshot) {
+    logWithTimestamp("strategies/residesInUS: No snapshot in query params. Exiting");
+    return res
+      .status(400)
+      .json({ error: "Request query params do not include snapshot" });
+  }
+  const snapshot = parseInt(req.query.snapshot);
+  const currentBlockNumber = await provider.getBlockNumber();
+  if (snapshot < 0 || snapshot > currentBlockNumber) {
+    logWithTimestamp("strategies/residesInUS: Snapshot is invalid. Exiting");
+    return res.status(400).json({ error: "Snapshot is invalid" });
+  }
+
+  const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
+  const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
+
   const actionId =
     typeof req.query?.["action-id"] == "number"
       ? parseInt(req.query?.["action-id"])
       : defaultActionId;
 
-  const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
-  const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
+  const overrides = {
+    blockTag: parseInt(req.query.snapshot),
+  };
 
   let scores = [];
   const addresses = req.query.addresses.split(",");
   for (const address of addresses) {
     try {
-      const isUnique = await contract.isUniqueForAction(address, actionId);
+      const isUnique = await contract.isUniqueForAction(address, actionId, overrides);
       scores.push({ address: address, score: isUnique ? 1 : 0 });
     } catch (err) {
       console.log(err);
