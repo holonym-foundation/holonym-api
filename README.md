@@ -12,9 +12,9 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
 - **GET** `/merkle-tree/leaves`
 - **GET** `/residence/country/us`
-- **GET** `/sybil-resistance`
+- **GET** `/sybil-resistance/gov-id`
 - **GET** `/snapshot-strategies/residence/country/us`
-- **GET** `/snapshot-strategies/sybil-resistance`
+- **GET** `/snapshot-strategies/sybil-resistance/gov-id`
 
 ### **GET** `/merkle-tree/leaves`
 
@@ -86,11 +86,13 @@ For the `/residence/country/<country-code>` endpoints, `<country-code>` will be 
     }
     ```
 
-### **GET** `/sybil-resistance?user=<user-address>&action-id=<action-id>`
+### **GET** `/sybil-resistance/gov-id?user=<user-address>&action-id=<action-id>`
 
 Get whether the user has registered for the given action-id.
 
 When a user "registers", they are establishing that the given blockchain address is a unique person for the action ID. See the section [Sybil resistance](#sybil-resistance) for more information about how action IDs can be used.
+
+This endpoint uses the government ID Holonym smart contract to check whether the user is unique.
 
 See the following documentation [How to get user's proofs](https://holonym.gitbook.io/holonym-alpha/usage/how-to-stop-sybil-attacks-using-holonym#how-to-get-the-proof) for how to use action IDs.
 
@@ -104,7 +106,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 - Example
 
   ```JavaScript
-  const resp = await fetch('https://api.holonym.io/sybil-resistance?user=0x0000000000000000000000000000000000000000&action-id=12345678');
+  const resp = await fetch('https://api.holonym.io/sybil-resistance/gov-id?user=0x0000000000000000000000000000000000000000&action-id=12345678');
   const { result: isUnique } = await resp.json();
   ```
 
@@ -188,7 +190,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
     }
     ```
 
-### **GET** `/snapshot-strategies/sybil-resistance?network=<network>&snapshot=<snapshot>&addresses=<addresses>&action-id=<action-id>`
+### **GET** `/snapshot-strategies/sybil-resistance/gov-id?network=<network>&snapshot=<snapshot>&addresses=<addresses>&action-id=<action-id>`
 
 Returns a list of scores indicating, for each address, whether the address has submitted a valid proof of uniqueness for the given action-id.
 
@@ -207,7 +209,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
       "api": "https://api.holonym.io",
       "symbol": "",
       "decimals": 0,
-      "strategy": "snapshot-strategies/sybil-resistance",
+      "strategy": "snapshot-strategies/sybil-resistance/gov-id",
       "additionalParameters": "action-id=123456789"
     }
 
@@ -224,7 +226,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
 - Example
 
   ```JavaScript
-  const resp = await fetch('https://api.holonym.io/snapshot-strategies/sybil-resistance?network=420&snapshot=9001&addresses=0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001&action-id=123');
+  const resp = await fetch('https://api.holonym.io/snapshot-strategies/sybil-resistance/gov-id?network=420&snapshot=9001&addresses=0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001&action-id=123');
   const data = await resp.json();
   ```
 

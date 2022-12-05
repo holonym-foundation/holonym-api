@@ -3,6 +3,6 @@ import { sybilResistance } from "../services/sybil-resistance.js";
 
 const router = express.Router();
 
-router.get("/", sybilResistance);
+router.get("/gov-id", sybilResistance);
 
 export default router;

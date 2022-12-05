@@ -4,6 +4,6 @@ import { residesInUS, sybilResistance } from "../services/snapshot-strategies.js
 const router = express.Router();
 
 router.get("/residence/country/us", residesInUS);
-router.get("/sybil-resistance", sybilResistance);
+router.get("/sybil-resistance/gov-id", sybilResistance);
 
 export default router;
