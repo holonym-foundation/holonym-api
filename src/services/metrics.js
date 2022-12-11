@@ -15,7 +15,8 @@ const timeseriesStartDate = new Date("Sep 28 2022").getTime();
 
 async function usResidencyTotalCount(req, res) {
   logWithTimestamp("usResidencyTotalCount: Entered");
-  const contractAddr = contractAddresses["optimistic-goerli"]["ResidencyStore"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr = contractAddresses["IsUSResident"]["testnet"]["optimism-goerli"];
   try {
     const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
     const usResidencyEvents = await contract.queryFilter("USResidency");
@@ -43,7 +44,8 @@ async function usResidencyTotalCount(req, res) {
  */
 async function usResidencyTimeseries(req, res) {
   logWithTimestamp("usResidencyTimeseries: Entered");
-  const contractAddr = contractAddresses["optimistic-goerli"]["ResidencyStore"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr = contractAddresses["IsUSResident"]["testnet"]["optimism-goerli"];
   try {
     const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
     const usResidencyEvents = await contract.queryFilter("USResidency");
@@ -63,7 +65,9 @@ async function usResidencyTimeseries(req, res) {
 
 async function sybilResistanceTotalCount(req, res) {
   logWithTimestamp("sybilResistanceTotalCount: Entered");
-  const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr =
+    contractAddresses["SybilResistance"]["testnet"]["optimism-goerli"];
   try {
     const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
     const uniquenessEvents = await contract.queryFilter("Uniqueness");
@@ -91,7 +95,9 @@ async function sybilResistanceTotalCount(req, res) {
  */
 async function sybilResistanceTimeseries(req, res) {
   logWithTimestamp("sybilResistanceTimeseries: Entered");
-  const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr =
+    contractAddresses["SybilResistance"]["testnet"]["optimism-goerli"];
   try {
     const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
     const uniquenessEvents = await contract.queryFilter("Uniqueness");
@@ -122,7 +128,8 @@ async function sybilResistanceTimeseries(req, res) {
  */
 async function leavesTimeseries(req, res) {
   logWithTimestamp("leavesTimeseries: Entered");
-  const contractAddr = contractAddresses["optimistic-goerli"]["MerkleTree"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr = contractAddresses["MerkleTree"]["testnet"]["optimism-goerli"];
   try {
     const contract = new ethers.Contract(contractAddr, MerkleTreeABI, provider);
     const leafInsertedEvents = await contract.queryFilter("LeafInserted");

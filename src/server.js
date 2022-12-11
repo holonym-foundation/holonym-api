@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
   const routes = [
     "GET /merkle-tree/leaves",
     "GET /residence/country/us",
-    "GET /sybil-resistance",
+    "GET /sybil-resistance/gov-id",
     "GET /snapshot-strategies/residence/country/us",
     "GET /snapshot-strategies/sybil-resistance",
   ];

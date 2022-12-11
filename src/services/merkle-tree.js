@@ -7,8 +7,8 @@ import HubABI from "../constants/HubABI.js";
 
 async function getLeaves(req, res) {
   logWithTimestamp("getLeaves: Entered");
-  // TODO: CONFIRM HUB CONTRACT ADDRESS
-  const contractAddr = contractAddresses["optimistic-goerli"]["Hub"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr = contractAddresses["Hub"]["testnet"]["optimism-goerli"];
   try {
     const contract = new ethers.Contract(contractAddr, HubABI, provider);
     const leaves = await contract.getLeaves();

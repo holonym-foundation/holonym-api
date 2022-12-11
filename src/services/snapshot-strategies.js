@@ -35,7 +35,8 @@ async function residesInUS(req, res) {
     return res.status(400).json({ error: "Snapshot is invalid" });
   }
 
-  const contractAddr = contractAddresses["optimistic-goerli"]["ResidencyStore"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr = contractAddresses["IsUSResident"]["testnet"]["optimism-goerli"];
   const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
 
   const overrides = {
@@ -96,7 +97,9 @@ async function sybilResistance(req, res) {
     return res.status(400).json({ error: "Snapshot is invalid" });
   }
 
-  const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr =
+    contractAddresses["SybilResistance"]["testnet"]["optimism-goerli"];
   const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
 
   const actionId =

@@ -27,7 +27,9 @@ async function sybilResistance(req, res) {
     logWithTimestamp("sybilResistance: Invalid action-id. Exiting");
     return res.status(400).json({ error: "Invalid action-id" });
   }
-  const contractAddr = contractAddresses["optimistic-goerli"]["AntiSybilStore"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr =
+    contractAddresses["SybilResistance"]["testnet"]["optimism-goerli"];
   try {
     const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
     const isUnique = await contract.isUniqueForAction(

@@ -17,7 +17,8 @@ async function getResidesInUS(req, res) {
     logWithTimestamp("getResidesInUS: Invalid address. Exiting");
     return res.status(400).json({ error: "Invalid user address" });
   }
-  const contractAddr = contractAddresses["optimistic-goerli"]["ResidencyStore"];
+  // TODO: Update when contracts are deployed to mainnet
+  const contractAddr = contractAddresses["IsUSResident"]["testnet"]["optimism-goerli"];
   try {
     const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
     const isUSResident = await contract.usResidency(req.query.user);
