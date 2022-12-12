@@ -10,9 +10,9 @@ import {
 const router = express.Router();
 
 router.get("/us-residency-count/total", usResidencyTotalCount);
-router.get("/us-residency-count/timeseries", usResidencyTimeseries);
+router.get("/us-residency-count/timeseries/:network", usResidencyTimeseries);
 router.get("/sybil-resistance-count/total", sybilResistanceTotalCount);
-router.get("/sybil-resistance-count/timeseries", sybilResistanceTimeseries);
-router.get("/leaves/timeseries", leavesTimeseries);
+router.get("/sybil-resistance-count/timeseries/:network", sybilResistanceTimeseries);
+router.get("/leaves/timeseries/:network", leavesTimeseries);
 
 export default router;

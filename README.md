@@ -10,22 +10,22 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
 ## Endpoints
 
-- **GET** `/merkle-tree/leaves`
-- **GET** `/residence/country/us`
-- **GET** `/sybil-resistance/gov-id`
+- **GET** `/merkle-tree/leaves/<network>`
+- **GET** `/residence/country/us/<network>`
+- **GET** `/sybil-resistance/gov-id/<network>`
 - **GET** `/snapshot-strategies/residence/country/us`
 - **GET** `/snapshot-strategies/sybil-resistance/gov-id`
 
-### **GET** `/merkle-tree/leaves`
+### **GET** `/merkle-tree/leaves/<network>`
 
-Get the leaves of the Holo Merkle tree (i.e., Anonymity Pool).
+Get the leaves of the Holo Merkle tree (i.e., Anonymity Pool) on the given network.
 
 This endpoint can be called when generating Merkle proofs.
 
 - Example
 
   ```JavaScript
-  const resp = await fetch('https://api.holonym.io/merkle-tree/leaves');
+  const resp = await fetch('https://api.holonym.io/merkle-tree/leaves/optimism');
   const { result: leaves } = await resp.json();
   ```
 
@@ -45,7 +45,7 @@ This endpoint can be called when generating Merkle proofs.
 
   ```
 
-### **GET** `/residence/country/us?user=<user-address>`
+### **GET** `/residence/country/us/<network>?user=<user-address>`
 
 Get whether the user resides in the US.
 
@@ -53,14 +53,15 @@ For the `/residence/country/<country-code>` endpoints, `<country-code>` will be 
 
 - Parameters
 
-  | name   | description               | type   | in    | required |
-  | ------ | ------------------------- | ------ | ----- | -------- |
-  | `user` | User's blockchain address | string | query | true     |
+  | name      | description                     | type   | in    | required |
+  | --------- | ------------------------------- | ------ | ----- | -------- |
+  | `network` | 'optimism' or 'optimism-goerli' | string | path  | true     |
+  | `user`    | User's blockchain address       | string | query | true     |
 
 - Example
 
   ```JavaScript
-  const resp = await fetch('https://api.holonym.io/residence/country/us?user=0x0000000000000000000000000000000000000000');
+  const resp = await fetch('https://api.holonym.io/residence/country/us/optimism?user=0x0000000000000000000000000000000000000000');
   const { result: isUSResident } = await resp.json();
   ```
 
@@ -86,7 +87,7 @@ For the `/residence/country/<country-code>` endpoints, `<country-code>` will be 
     }
     ```
 
-### **GET** `/sybil-resistance/gov-id?user=<user-address>&action-id=<action-id>`
+### **GET** `/sybil-resistance/gov-id/<network>?user=<user-address>&action-id=<action-id>`
 
 Get whether the user has registered for the given action-id.
 
@@ -98,15 +99,16 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 
 - Parameters
 
-  | name        | description               | type   | in    | required |
-  | ----------- | ------------------------- | ------ | ----- | -------- |
-  | `user`      | User's blockchain address | string | query | true     |
-  | `action-id` | Action ID                 | string | query | true     |
+  | name        | description                     | type   | in    | required |
+  | ----------- | ------------------------------- | ------ | ----- | -------- |
+  | `network`   | 'optimism' or 'optimism-goerli' | string | path  | true     |
+  | `user`      | User's blockchain address       | string | query | true     |
+  | `action-id` | Action ID                       | string | query | true     |
 
 - Example
 
   ```JavaScript
-  const resp = await fetch('https://api.holonym.io/sybil-resistance/gov-id?user=0x0000000000000000000000000000000000000000&action-id=12345678');
+  const resp = await fetch('https://api.holonym.io/sybil-resistance/gov-id/optimism?user=0x0000000000000000000000000000000000000000&action-id=12345678');
   const { result: isUnique } = await resp.json();
   ```
 

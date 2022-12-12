@@ -1,12 +1,16 @@
 import express from "express";
 import { ethers } from "ethers";
-import { thisAddress, provider } from "../init.js";
+import { thisAddress, providers } from "../init.js";
 import {
   logWithTimestamp,
   dateToMonthDayYearStr,
   convertEventsToTimeseries,
 } from "../utils/utils.js";
-import contractAddresses from "../constants/contractAddresses.js";
+import {
+  resStoreAddrsByNetwork,
+  sybilResistanceAddrsByNetwork,
+  treeAddrsByNetwork,
+} from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import MerkleTreeABI from "../constants/MerkleTreeABI.js";
@@ -15,20 +19,23 @@ const timeseriesStartDate = new Date("Sep 28 2022").getTime();
 
 async function usResidencyTotalCount(req, res) {
   logWithTimestamp("usResidencyTotalCount: Entered");
-  // TODO: Update when contracts are deployed to mainnet
-  const contractAddr = contractAddresses["IsUSResident"]["testnet"]["optimism-goerli"];
-  try {
-    const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
-    const usResidencyEvents = await contract.queryFilter("USResidency");
-    const count = usResidencyEvents?.length > 0 ? usResidencyEvents.length : 0;
-    return res.status(200).json({ result: count });
-  } catch (err) {
-    console.log(err);
-    logWithTimestamp(
-      "usResidencyTotalCount: Encountered error while getting smart contract events. Exiting"
-    );
-    return res.status(500).json({ error: "An unexpected error occured" });
+  let count = 0;
+  for (const network of Object.keys(resStoreAddrsByNetwork)) {
+    try {
+      const contractAddr = resStoreAddrsByNetwork[network];
+      const provider = providers[network];
+      const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
+      const usResidencyEvents = await contract.queryFilter("USResidency");
+      count += usResidencyEvents?.length > 0 ? usResidencyEvents.length : 0;
+    } catch (err) {
+      console.log(err);
+      logWithTimestamp(
+        "usResidencyTotalCount: Encountered error while getting smart contract events. Exiting"
+      );
+      return res.status(500).json({ error: "An unexpected error occured" });
+    }
   }
+  return res.status(200).json({ result: count });
 }
 
 /**
@@ -44,8 +51,8 @@ async function usResidencyTotalCount(req, res) {
  */
 async function usResidencyTimeseries(req, res) {
   logWithTimestamp("usResidencyTimeseries: Entered");
-  // TODO: Update when contracts are deployed to mainnet
-  const contractAddr = contractAddresses["IsUSResident"]["testnet"]["optimism-goerli"];
+  const contractAddr = resStoreAddrsByNetwork[req.params.network];
+  const provider = providers[req.params.network];
   try {
     const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
     const usResidencyEvents = await contract.queryFilter("USResidency");
@@ -65,21 +72,23 @@ async function usResidencyTimeseries(req, res) {
 
 async function sybilResistanceTotalCount(req, res) {
   logWithTimestamp("sybilResistanceTotalCount: Entered");
-  // TODO: Update when contracts are deployed to mainnet
-  const contractAddr =
-    contractAddresses["SybilResistance"]["testnet"]["optimism-goerli"];
-  try {
-    const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
-    const uniquenessEvents = await contract.queryFilter("Uniqueness");
-    const count = uniquenessEvents?.length > 0 ? uniquenessEvents.length : 0;
-    return res.status(200).json({ result: count });
-  } catch (err) {
-    console.log(err);
-    logWithTimestamp(
-      "sybilResistanceTotalCount: Encountered error while getting smart contract events. Exiting"
-    );
-    return res.status(500).json({ error: "An unexpected error occured" });
+  let count = 0;
+  for (const network of Object.keys(sybilResistanceAddrsByNetwork)) {
+    try {
+      const contractAddr = sybilResistanceAddrsByNetwork[network];
+      const provider = providers[network];
+      const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
+      const uniquenessEvents = await contract.queryFilter("Uniqueness");
+      count += uniquenessEvents?.length > 0 ? uniquenessEvents.length : 0;
+    } catch (err) {
+      console.log(err);
+      logWithTimestamp(
+        "sybilResistanceTotalCount: Encountered error while getting smart contract events. Exiting"
+      );
+      return res.status(500).json({ error: "An unexpected error occured" });
+    }
   }
+  return res.status(200).json({ result: count });
 }
 
 /**
@@ -95,9 +104,8 @@ async function sybilResistanceTotalCount(req, res) {
  */
 async function sybilResistanceTimeseries(req, res) {
   logWithTimestamp("sybilResistanceTimeseries: Entered");
-  // TODO: Update when contracts are deployed to mainnet
-  const contractAddr =
-    contractAddresses["SybilResistance"]["testnet"]["optimism-goerli"];
+  const contractAddr = sybilResistanceAddrsByNetwork[req.params.network];
+  const provider = providers[req.params.network];
   try {
     const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
     const uniquenessEvents = await contract.queryFilter("Uniqueness");
@@ -128,8 +136,8 @@ async function sybilResistanceTimeseries(req, res) {
  */
 async function leavesTimeseries(req, res) {
   logWithTimestamp("leavesTimeseries: Entered");
-  // TODO: Update when contracts are deployed to mainnet
-  const contractAddr = contractAddresses["MerkleTree"]["testnet"]["optimism-goerli"];
+  const contractAddr = treeAddrsByNetwork[req.params.network];
+  const provider = providers[req.params.network];
   try {
     const contract = new ethers.Contract(contractAddr, MerkleTreeABI, provider);
     const leafInsertedEvents = await contract.queryFilter("LeafInserted");

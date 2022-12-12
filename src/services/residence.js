@@ -1,8 +1,8 @@
 import express from "express";
 import { ethers } from "ethers";
-import { thisAddress, provider } from "../init.js";
+import { thisAddress, providers } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
-import contractAddresses from "../constants/contractAddresses.js";
+import { resStoreAddrsByNetwork } from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 
 async function getResidesInUS(req, res) {
@@ -17,8 +17,8 @@ async function getResidesInUS(req, res) {
     logWithTimestamp("getResidesInUS: Invalid address. Exiting");
     return res.status(400).json({ error: "Invalid user address" });
   }
-  // TODO: Update when contracts are deployed to mainnet
-  const contractAddr = contractAddresses["IsUSResident"]["testnet"]["optimism-goerli"];
+  const contractAddr = resStoreAddrsByNetwork[req.params.network];
+  const provider = providers[req.params.network];
   try {
     const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
     const isUSResident = await contract.usResidency(req.query.user);

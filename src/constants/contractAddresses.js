@@ -1,4 +1,4 @@
-export default {
+const addrsByNameNetTypeNetwork = {
   // old
   // "optimistic-goerli": {
   //   ResidencyStore: "0x42D6007317CED2281a64aCc052cE57e3d92bf912",
@@ -38,4 +38,32 @@ export default {
       "optimism-goerli": "0xF5b00c8681c2B0a5966b2C99dA8FE725e7b90F63",
     },
   },
+};
+
+const hubAddrsByNetwork = {
+  ...addrsByNameNetTypeNetwork.Hub.mainnet,
+  ...addrsByNameNetTypeNetwork.Hub.testnet,
+};
+
+const resStoreAddrsByNetwork = {
+  ...addrsByNameNetTypeNetwork.IsUSResident.mainnet,
+  ...addrsByNameNetTypeNetwork.IsUSResident.testnet,
+};
+
+const sybilResistanceAddrsByNetwork = {
+  ...addrsByNameNetTypeNetwork.SybilResistance.mainnet,
+  ...addrsByNameNetTypeNetwork.SybilResistance.testnet,
+};
+
+const treeAddrsByNetwork = {
+  ...addrsByNameNetTypeNetwork.MerkleTree.mainnet,
+  ...addrsByNameNetTypeNetwork.MerkleTree.testnet,
+};
+
+export default addrsByNameNetTypeNetwork;
+export {
+  hubAddrsByNetwork,
+  resStoreAddrsByNetwork,
+  sybilResistanceAddrsByNetwork,
+  treeAddrsByNetwork,
 };

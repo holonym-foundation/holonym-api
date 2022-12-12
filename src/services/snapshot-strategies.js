@@ -1,9 +1,12 @@
 import express from "express";
 import { ethers } from "ethers";
-import { thisAddress, provider } from "../init.js";
+import { thisAddress, providers } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
 import { defaultActionId } from "../constants/misc.js";
-import contractAddresses from "../constants/contractAddresses.js";
+import {
+  resStoreAddrsByNetwork,
+  sybilResistanceAddrsByNetwork,
+} from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 
@@ -35,8 +38,9 @@ async function residesInUS(req, res) {
     return res.status(400).json({ error: "Snapshot is invalid" });
   }
 
-  // TODO: Update when contracts are deployed to mainnet
-  const contractAddr = contractAddresses["IsUSResident"]["testnet"]["optimism-goerli"];
+  const network = req.query.network === "420" ? "optimism-goerli" : "optimism";
+  const contractAddr = resStoreAddrsByNetwork[network];
+  const provider = providers[network];
   const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
 
   const overrides = {
@@ -97,9 +101,9 @@ async function sybilResistance(req, res) {
     return res.status(400).json({ error: "Snapshot is invalid" });
   }
 
-  // TODO: Update when contracts are deployed to mainnet
-  const contractAddr =
-    contractAddresses["SybilResistance"]["testnet"]["optimism-goerli"];
+  const network = req.query.network == "420" ? "optimism-goerli" : "optimism";
+  const contractAddr = sybilResistanceAddrsByNetwork[network];
+  const provider = providers[network];
   const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
 
   const actionId =
