@@ -15,7 +15,7 @@ import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import MerkleTreeABI from "../constants/MerkleTreeABI.js";
 
-const timeseriesStartDate = new Date("Sep 28 2022").getTime();
+const timeseriesStartDate = new Date("Dec 08 2022").getTime();
 
 async function usResidencyTotalCount(req, res) {
   logWithTimestamp("usResidencyTotalCount: Entered");
@@ -60,6 +60,13 @@ async function usResidencyTimeseries(req, res) {
       usResidencyEvents,
       timeseriesStartDate
     );
+    if (req.query["only-total"]) {
+      const newTimeseries = timeseries.map((event) => ({
+        total: event.total,
+        dateStr: event.dateStr,
+      }));
+      return res.status(200).json({ result: newTimeseries });
+    }
     return res.status(200).json({ result: timeseries });
   } catch (err) {
     console.log(err);
@@ -113,6 +120,13 @@ async function sybilResistanceTimeseries(req, res) {
       uniquenessEvents,
       timeseriesStartDate
     );
+    if (req.query["only-total"]) {
+      const newTimeseries = timeseries.map((event) => ({
+        total: event.total,
+        dateStr: event.dateStr,
+      }));
+      return res.status(200).json({ result: newTimeseries });
+    }
     return res.status(200).json({ result: timeseries });
   } catch (err) {
     console.log(err);
@@ -145,6 +159,13 @@ async function leavesTimeseries(req, res) {
       leafInsertedEvents,
       timeseriesStartDate
     );
+    if (req.query["only-total"]) {
+      const newTimeseries = timeseries.map((event) => ({
+        total: event.total,
+        dateStr: event.dateStr,
+      }));
+      return res.status(200).json({ result: newTimeseries });
+    }
     return res.status(200).json({ result: timeseries });
   } catch (err) {
     console.log(err);
