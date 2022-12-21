@@ -4,6 +4,7 @@ Built so that projects can integrate Holo with two lines of code.
 
 ## Supported chains
 
+- Optimism
 - Optimism Goerli
 
 We plan to support more chains in the future. If you would like to use Holonym on a chain other than the ones currently supported, please reach out to us. You can find ways to contact us on [our website](https://holonym.id/).
