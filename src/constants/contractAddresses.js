@@ -32,7 +32,7 @@ const addrsByNameNetTypeNetwork = {
   },
   MerkleTree: {
     mainnet: {
-      optimism: "0x56A14Abe1DF94aF0dE78AEF3BD96ae9928D3b415",
+      optimism: "0xE848Ce0b3cF9B55F05d47DD832B8c1193Ad2D970",
     },
     testnet: {
       "optimism-goerli": "0xF5b00c8681c2B0a5966b2C99dA8FE725e7b90F63",
