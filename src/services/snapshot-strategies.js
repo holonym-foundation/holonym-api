@@ -31,17 +31,18 @@ async function residesInUS(req, res) {
       .status(400)
       .json({ error: "Request query params do not include snapshot" });
   }
+
+  const network = req.query.network === "420" ? "optimism-goerli" : "optimism";
+  const contractAddr = resStoreAddrsByNetwork[network];
+  const provider = providers[network];
+  const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
+
   const snapshot = parseInt(req.query.snapshot);
   const currentBlockNumber = await provider.getBlockNumber();
   if (snapshot < 0 || snapshot > currentBlockNumber) {
     logWithTimestamp("strategies/residesInUS: Snapshot is invalid. Exiting");
     return res.status(400).json({ error: "Snapshot is invalid" });
   }
-
-  const network = req.query.network === "420" ? "optimism-goerli" : "optimism";
-  const contractAddr = resStoreAddrsByNetwork[network];
-  const provider = providers[network];
-  const contract = new ethers.Contract(contractAddr, ResidencyStoreABI, provider);
 
   const overrides = {
     blockTag: parseInt(req.query.snapshot),
@@ -51,7 +52,7 @@ async function residesInUS(req, res) {
   const addresses = req.query.addresses.split(",");
   for (const address of addresses) {
     try {
-      const isUSResident = await contract.usResidency(address, overrides);
+      const isUSResident = await contract.usResidency(address); //, overrides);
       scores.push({ address: address, score: isUSResident ? 1 : 0 });
     } catch (err) {
       console.log(err);
@@ -94,17 +95,18 @@ async function sybilResistance(req, res) {
       .status(400)
       .json({ error: "Request query params do not include snapshot" });
   }
+
+  const network = req.query.network == "420" ? "optimism-goerli" : "optimism";
+  const contractAddr = sybilResistanceAddrsByNetwork[network];
+  const provider = providers[network];
+  const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
+
   const snapshot = parseInt(req.query.snapshot);
   const currentBlockNumber = await provider.getBlockNumber();
   if (snapshot < 0 || snapshot > currentBlockNumber) {
     logWithTimestamp("strategies/residesInUS: Snapshot is invalid. Exiting");
     return res.status(400).json({ error: "Snapshot is invalid" });
   }
-
-  const network = req.query.network == "420" ? "optimism-goerli" : "optimism";
-  const contractAddr = sybilResistanceAddrsByNetwork[network];
-  const provider = providers[network];
-  const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
 
   const actionId =
     typeof req.query?.["action-id"] == "number"
@@ -119,7 +121,7 @@ async function sybilResistance(req, res) {
   const addresses = req.query.addresses.split(",");
   for (const address of addresses) {
     try {
-      const isUnique = await contract.isUniqueForAction(address, actionId, overrides);
+      const isUnique = await contract.isUniqueForAction(address, actionId); //, overrides);
       scores.push({ address: address, score: isUnique ? 1 : 0 });
     } catch (err) {
       console.log(err);
