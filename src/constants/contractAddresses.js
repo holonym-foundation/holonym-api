@@ -19,7 +19,7 @@ const addrsByNameNetTypeNetwork = {
       optimism: "0x6A78dF871291627C5470F7a768745C3ff05741F2",
     },
     testnet: {
-      "optimism-goerli": "0x1A5f8D110Fa053543184aF404e344a85f5BC6335",
+      "optimism-goerli": "0xa6e547FD04C2457Fc37354A9e751aAE4d63949cC",
     },
   },
   SybilResistance: {
@@ -27,7 +27,7 @@ const addrsByNameNetTypeNetwork = {
       optimism: "0x3497556f7D0bF602D4237Ecb8ae92840D09E4f63",
     },
     testnet: {
-      "optimism-goerli": "0xBA8a4C5c1f36Dc802d51FEEfF3aa4ef97Dae4B10",
+      "optimism-goerli": "0x2A817705E2c42Ae320f84AE5F799fdd7044e6B41",
     },
   },
   MerkleTree: {
