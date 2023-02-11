@@ -13,7 +13,6 @@ import {
 } from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
-import MerkleTreeABI from "../constants/MerkleTreeABI.js";
 
 const timeseriesStartDate = new Date("Dec 08 2022").getTime();
 
@@ -137,49 +136,9 @@ async function sybilResistanceTimeseries(req, res) {
   }
 }
 
-/**
- * This endpoint can be used to view the total number of Sybil resistance proofs
- * at any given day of the year.
- *
- * Returns an array of smart contract event objects such that every day of the year
- * has at least one corresponding object. If multiple events are emitted on a single
- * day, the event object corresponding to that day will be the last one of the day;
- * the other events in the day will not show up in the timeseries. Additionally,
- * a running total is added to each event (i.e., the nth event will have a property
- * `total` that equals n).
- */
-async function leavesTimeseries(req, res) {
-  logWithTimestamp("leavesTimeseries: Entered");
-  const contractAddr = treeAddrsByNetwork[req.params.network];
-  const provider = providers[req.params.network];
-  try {
-    const contract = new ethers.Contract(contractAddr, MerkleTreeABI, provider);
-    const leafInsertedEvents = await contract.queryFilter("LeafInserted");
-    const timeseries = await convertEventsToTimeseries(
-      leafInsertedEvents,
-      timeseriesStartDate
-    );
-    if (req.query["only-total"]) {
-      const newTimeseries = timeseries.map((event) => ({
-        total: event.total,
-        dateStr: event.dateStr,
-      }));
-      return res.status(200).json({ result: newTimeseries });
-    }
-    return res.status(200).json({ result: timeseries });
-  } catch (err) {
-    console.log(err);
-    logWithTimestamp(
-      "leavesTimeseries: Encountered error while getting smart contract events. Exiting"
-    );
-    return res.status(500).json({ error: "An unexpected error occured" });
-  }
-}
-
 export {
   usResidencyTotalCount,
   usResidencyTimeseries,
   sybilResistanceTotalCount,
   sybilResistanceTimeseries,
-  leavesTimeseries,
 };

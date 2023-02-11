@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import "./init.js"; // for side effects
-import merkleTree from "./routes/merkle-tree.js";
 import residence from "./routes/residence.js";
 import sybilResistance from "./routes/sybil-resistance.js";
 import snapshotStrategies from "./routes/snapshot-strategies.js";
@@ -22,7 +21,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/merkle-tree", merkleTree);
 app.use("/residence", residence);
 app.use("/sybil-resistance", sybilResistance);
 app.use("/snapshot-strategies", snapshotStrategies);
@@ -31,7 +29,6 @@ app.use("/metrics", metrics);
 app.get("/", (req, res) => {
   console.log(`${new Date().toISOString()} GET /`);
   const routes = [
-    "GET /merkle-tree/leaves",
     "GET /residence/country/us",
     "GET /sybil-resistance/gov-id",
     "GET /snapshot-strategies/residence/country/us",

@@ -11,40 +11,10 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
 ## Endpoints
 
-- **GET** `/merkle-tree/leaves/<network>`
 - **GET** `/residence/country/us/<network>`
 - **GET** `/sybil-resistance/gov-id/<network>`
 - **GET** `/snapshot-strategies/residence/country/us`
 - **GET** `/snapshot-strategies/sybil-resistance/gov-id`
-
-### **GET** `/merkle-tree/leaves/<network>`
-
-Get the leaves of the Holo Merkle tree (i.e., Anonymity Pool) on the given network.
-
-This endpoint can be called when generating Merkle proofs.
-
-- Example
-
-  ```JavaScript
-  const resp = await fetch('https://api.holonym.io/merkle-tree/leaves/optimism');
-  const { result: leaves } = await resp.json();
-  ```
-
-- Responses
-
-  - 200
-
-  ```JSON
-  {
-      "result": [
-        "0x1747b1561951392e2c515c7a58fade696c455b3ddec3a545a8cc928f71d104f8",
-        "0x20ee87c5d3c27a081a23369dcb6f31bdd6f0dd7645aa5f349c4b46348250b62c",
-        "0x108c187c81c01ee547689d4a646969d8956c66db20a8fbf5523e69e63418882b",
-        ...
-      ],
-  }
-
-  ```
 
 ### **GET** `/residence/country/us/<network>?user=<user-address>`
 
