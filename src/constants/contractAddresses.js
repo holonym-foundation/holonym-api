@@ -46,6 +46,14 @@ const addrsByNameNetTypeNetwork = {
       "optimism-goerli": "0x990e6E35432290b3729B659c9ff9748e97F55785",
     },
   },
+  SybilResistancePhone: {
+    mainnet: {
+      optimism: "0xA40C8AAF7F47B18c1eDdBe7855b580f828eD9711",
+    },
+    testnet: {
+      "optimism-goerli": "0x2e5cee2004b49161c5Cf5769da7DC1ec6187Ee82",
+    },
+  },
   MerkleTree: {
     mainnet: {
       optimism: "0xE848Ce0b3cF9B55F05d47DD832B8c1193Ad2D970",
@@ -71,6 +79,11 @@ const sybilResistanceAddrsByNetwork = {
   ...addrsByNameNetTypeNetwork.SybilResistance.testnet,
 };
 
+const sybilResistancePhoneAddrsByNetwork = {
+  ...addrsByNameNetTypeNetwork.SybilResistancePhone.mainnet,
+  ...addrsByNameNetTypeNetwork.SybilResistancePhone.testnet,
+};
+
 const treeAddrsByNetwork = {
   ...addrsByNameNetTypeNetwork.MerkleTree.mainnet,
   ...addrsByNameNetTypeNetwork.MerkleTree.testnet,
@@ -81,5 +94,6 @@ export {
   hubAddrsByNetwork,
   resStoreAddrsByNetwork,
   sybilResistanceAddrsByNetwork,
+  sybilResistancePhoneAddrsByNetwork,
   treeAddrsByNetwork,
 };

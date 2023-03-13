@@ -13,6 +13,7 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
 - **GET** `/residence/country/us/<network>`
 - **GET** `/sybil-resistance/gov-id/<network>`
+- **GET** `/sybil-resistance/phone/<network>`
 - **GET** `/snapshot-strategies/residence/country/us`
 - **GET** `/snapshot-strategies/sybil-resistance/gov-id`
 
@@ -58,23 +59,24 @@ For the `/residence/country/<country-code>` endpoints, `<country-code>` will be 
     }
     ```
 
-### **GET** `/sybil-resistance/gov-id/<network>?user=<user-address>&action-id=<action-id>`
+### **GET** `/sybil-resistance/<credential-type>/<network>?user=<user-address>&action-id=<action-id>`
 
 Get whether the user has registered for the given action-id.
 
 When a user "registers", they are establishing that the given blockchain address is a unique person for the action ID. See the section [Sybil resistance](#sybil-resistance) for more information about how action IDs can be used.
 
-This endpoint uses the government ID Holonym smart contract to check whether the user is unique.
+If `credential-type` is `gov-id`, this endpoint uses the government ID Holonym smart contract to check whether the user is unique. If `credential-type` is `phone`, this endpoint uses the phone number Holonym smart contract to check whether the user is unique.
 
 See the following documentation [How to get user's proofs](https://holonym.gitbook.io/holonym-alpha/usage/how-to-stop-sybil-attacks-using-holonym#how-to-get-the-proof) for how to use action IDs.
 
 - Parameters
 
-  | name        | description                     | type   | in    | required |
-  | ----------- | ------------------------------- | ------ | ----- | -------- |
-  | `network`   | 'optimism' or 'optimism-goerli' | string | path  | true     |
-  | `user`      | User's blockchain address       | string | query | true     |
-  | `action-id` | Action ID                       | string | query | true     |
+  | name              | description                     | type   | in    | required |
+  | ----------------- | ------------------------------- | ------ | ----- | -------- |
+  | `credential-type` | 'gov-id' or 'phone'             | string | path  | true     |
+  | `network`         | 'optimism' or 'optimism-goerli' | string | path  | true     |
+  | `user`            | User's blockchain address       | string | query | true     |
+  | `action-id`       | Action ID                       | string | query | true     |
 
 - Example
 
