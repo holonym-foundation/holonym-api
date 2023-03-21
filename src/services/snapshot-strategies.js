@@ -6,6 +6,7 @@ import { defaultActionId } from "../constants/misc.js";
 import {
   resStoreAddrsByNetwork,
   sybilResistanceAddrsByNetwork,
+  sybilResistancePhoneAddrsByNetwork,
 } from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
@@ -78,12 +79,12 @@ async function residesInUS(req, res) {
  * action-id param must be passed as to options.additionalParameters in strategy.
  * For example, "action-id=123"
  */
-async function sybilResistance(req, res) {
+async function sybilResistanceGovId(req, res) {
   // TODO: Add support for `network` param
-  logWithTimestamp("strategies/sybilResistance: Entered");
+  logWithTimestamp("strategies/sybilResistanceGovId: Entered");
   if (!req.query.addresses) {
     logWithTimestamp(
-      "strategies/sybilResistance: No addresses in query params. Exiting"
+      "strategies/sybilResistanceGovId: No addresses in query params. Exiting"
     );
     return res
       .status(400)
@@ -96,7 +97,7 @@ async function sybilResistance(req, res) {
       .json({ error: "Request query params do not include snapshot" });
   }
 
-  const network = req.query.network == "420" ? "optimism-goerli" : "optimism";
+  const network = req.query.network === "420" ? "optimism-goerli" : "optimism";
   const contractAddr = sybilResistanceAddrsByNetwork[network];
   const provider = providers[network];
   const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
@@ -104,12 +105,12 @@ async function sybilResistance(req, res) {
   const snapshot = parseInt(req.query.snapshot);
   const currentBlockNumber = await provider.getBlockNumber();
   if (snapshot < 0 || snapshot > currentBlockNumber) {
-    logWithTimestamp("strategies/residesInUS: Snapshot is invalid. Exiting");
+    logWithTimestamp("strategies/sybilResistanceGovId: Snapshot is invalid. Exiting");
     return res.status(400).json({ error: "Snapshot is invalid" });
   }
 
   const actionId =
-    typeof req.query?.["action-id"] == "number"
+    typeof req.query?.["action-id"] === "number"
       ? parseInt(req.query?.["action-id"])
       : defaultActionId;
 
@@ -126,7 +127,7 @@ async function sybilResistance(req, res) {
     } catch (err) {
       console.log(err);
       logWithTimestamp(
-        `strategies/sybilResistance: Encountered error while calling smart contract for address ${address}. Exiting`
+        `strategies/sybilResistanceGovId: Encountered error while calling smart contract for address ${address}. Exiting`
       );
       return res.status(500).json({ error: "An unexpected error occured" });
     }
@@ -134,4 +135,62 @@ async function sybilResistance(req, res) {
   return res.status(200).json({ score: scores });
 }
 
-export { residesInUS, sybilResistance };
+// TODO: sybilResistancePhone is the same as sybilResistancePhone, except for contract address.
+// Rewrite to remove code duplication.
+async function sybilResistancePhone(req, res) {
+  // TODO: Add support for `network` param
+  logWithTimestamp("strategies/sybilResistancePhone: Entered");
+  if (!req.query.addresses) {
+    logWithTimestamp(
+      "strategies/sybilResistancePhone: No addresses in query params. Exiting"
+    );
+    return res
+      .status(400)
+      .json({ error: "Request query params do not include addresses" });
+  }
+  if (!req.query.snapshot) {
+    logWithTimestamp("strategies/residesInUS: No snapshot in query params. Exiting");
+    return res
+      .status(400)
+      .json({ error: "Request query params do not include snapshot" });
+  }
+
+  const network = req.query.network === "420" ? "optimism-goerli" : "optimism";
+  const contractAddr = sybilResistancePhoneAddrsByNetwork[network];
+  const provider = providers[network];
+  const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
+
+  const snapshot = parseInt(req.query.snapshot);
+  const currentBlockNumber = await provider.getBlockNumber();
+  if (snapshot < 0 || snapshot > currentBlockNumber) {
+    logWithTimestamp("strategies/sybilResistancePhone: Snapshot is invalid. Exiting");
+    return res.status(400).json({ error: "Snapshot is invalid" });
+  }
+
+  const actionId =
+    typeof req.query?.["action-id"] === "number"
+      ? parseInt(req.query?.["action-id"])
+      : defaultActionId;
+
+  const overrides = {
+    blockTag: parseInt(req.query.snapshot),
+  };
+
+  let scores = [];
+  const addresses = req.query.addresses.split(",");
+  for (const address of addresses) {
+    try {
+      const isUnique = await contract.isUniqueForAction(address, actionId); //, overrides);
+      scores.push({ address: address, score: isUnique ? 1 : 0 });
+    } catch (err) {
+      console.log(err);
+      logWithTimestamp(
+        `strategies/sybilResistancePhone: Encountered error while calling smart contract for address ${address}. Exiting`
+      );
+      return res.status(500).json({ error: "An unexpected error occured" });
+    }
+  }
+  return res.status(200).json({ score: scores });
+}
+
+export { residesInUS, sybilResistanceGovId, sybilResistancePhone };

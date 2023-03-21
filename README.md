@@ -16,6 +16,7 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/sybil-resistance/phone/<network>`
 - **GET** `/snapshot-strategies/residence/country/us`
 - **GET** `/snapshot-strategies/sybil-resistance/gov-id`
+- **GET** `/snapshot-strategies/sybil-resistance/phone`
 
 ### **GET** `/residence/country/us/<network>?user=<user-address>`
 
@@ -167,7 +168,7 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
 
 ### **GET** `/snapshot-strategies/sybil-resistance/gov-id?network=<network>&snapshot=<snapshot>&addresses=<addresses>&action-id=<action-id>`
 
-Returns a list of scores indicating, for each address, whether the address has submitted a valid proof of uniqueness for the given action-id.
+Returns a list of scores indicating, for each address, whether the address has submitted a valid proof of uniqueness (using government ID) for the given action-id.
 
 Every score is either 1 or 0.
 
@@ -202,6 +203,65 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
 
   ```JavaScript
   const resp = await fetch('https://api.holonym.io/snapshot-strategies/sybil-resistance/gov-id?network=420&snapshot=9001&addresses=0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001&action-id=123');
+  const data = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+      "score" : [
+          {
+            "address" : "0x0000000000000000000000000000000000000000",
+            "score" : 0
+          },
+          {
+            "address" : "0x0000000000000000000000000000000000000001",
+            "score" : 1
+          }
+      ]
+    }
+    ```
+
+### **GET** `/snapshot-strategies/sybil-resistance/phone?network=<network>&snapshot=<snapshot>&addresses=<addresses>&action-id=<action-id>`
+
+Returns a list of scores indicating, for each address, whether the address has submitted a valid proof of uniqueness (using phone number) for the given action-id.
+
+Every score is either 1 or 0.
+
+| score | description                                       |
+| ----- | ------------------------------------------------- |
+| 1     | Address has proven uniqueness for action-id       |
+| 0     | Address has _not_ proven uniqueness for action-id |
+
+#### Use with Snapshot
+
+To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tree/master/src/strategies/api) Snapshot strategy, specify the strategy parameters using the following format. We suggest that you use the default action-id `123456789`. If you are using a different action-id, replace `123456789` with your action-id.
+
+    {
+      "api": "https://api.holonym.io",
+      "symbol": "",
+      "decimals": 0,
+      "strategy": "snapshot-strategies/sybil-resistance/phone",
+      "additionalParameters": "action-id=123456789"
+    }
+
+#### Use without Snapshot
+
+- Parameters
+
+  | name        | description                                    | type   | in    | required |
+  | ----------- | ---------------------------------------------- | ------ | ----- | -------- |
+  | `network`   | Chain ID                                       | string | query | true     |
+  | `snapshot`  | Block height                                   | string | query | true     |
+  | `addresses` | List of blockchain address separated by commas | string | query | true     |
+
+- Example
+
+  ```JavaScript
+  const resp = await fetch('https://api.holonym.io/snapshot-strategies/sybil-resistance/phone?network=420&snapshot=9001&addresses=0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001&action-id=123');
   const data = await resp.json();
   ```
 
