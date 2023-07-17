@@ -9,6 +9,7 @@ import {
 import {
   resStoreAddrsByNetwork,
   sybilResistanceAddrsByNetwork,
+  sybilResistancePhoneAddrsByNetwork,
   treeAddrsByNetwork,
 } from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
@@ -98,8 +99,8 @@ async function sybilResistanceTotalCount(req, res) {
 }
 
 /**
- * This endpoint can be used to view the total number of Sybil resistance proofs
- * at any given day of the year.
+ * This endpoint can be used to view the total number of Sybil resistance (government
+ * ID) proofs at any given day of the year.
  *
  * Returns an array of smart contract event objects such that every day of the year
  * has at least one corresponding object. If multiple events are emitted on a single
@@ -136,9 +137,71 @@ async function sybilResistanceTimeseries(req, res) {
   }
 }
 
+async function sybilResistancePhoneTotalCount(req, res) {
+  logWithTimestamp("sybilResistancePhoneTotalCount: Entered");
+  let count = 0;
+  for (const network of Object.keys(sybilResistancePhoneAddrsByNetwork)) {
+    try {
+      const contractAddr = sybilResistancePhoneAddrsByNetwork[network];
+      const provider = providers[network];
+      const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
+      const uniquenessEvents = await contract.queryFilter("Uniqueness");
+      count += uniquenessEvents?.length > 0 ? uniquenessEvents.length : 0;
+    } catch (err) {
+      console.log(err);
+      logWithTimestamp(
+        "sybilResistancePhoneTotalCount: Encountered error while getting smart contract events. Exiting"
+      );
+      return res.status(500).json({ error: "An unexpected error occured" });
+    }
+  }
+  return res.status(200).json({ result: count });
+}
+
+/**
+ * This endpoint can be used to view the total number of Sybil resistance (phone)
+ * proofs at any given day of the year.
+ *
+ * Returns an array of smart contract event objects such that every day of the year
+ * has at least one corresponding object. If multiple events are emitted on a single
+ * day, the event object corresponding to that day will be the last one of the day;
+ * the other events in the day will not show up in the timeseries. Additionally,
+ * a running total is added to each event (i.e., the nth event will have a property
+ * `total` that equals n).
+ */
+async function sybilResistancePhoneTimeseries(req, res) {
+  logWithTimestamp("sybilResistancePhoneTimeseries: Entered");
+  const contractAddr = sybilResistancePhoneAddrsByNetwork[req.params.network];
+  const provider = providers[req.params.network];
+  try {
+    const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
+    const uniquenessEvents = await contract.queryFilter("Uniqueness");
+    const timeseries = await convertEventsToTimeseries(
+      uniquenessEvents,
+      timeseriesStartDate
+    );
+    if (req.query["only-total"]) {
+      const newTimeseries = timeseries.map((event) => ({
+        total: event.total,
+        dateStr: event.dateStr,
+      }));
+      return res.status(200).json({ result: newTimeseries });
+    }
+    return res.status(200).json({ result: timeseries });
+  } catch (err) {
+    console.log(err);
+    logWithTimestamp(
+      "sybilResistancePhoneTimeseries: Encountered error while getting smart contract events. Exiting"
+    );
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
 export {
   usResidencyTotalCount,
   usResidencyTimeseries,
   sybilResistanceTotalCount,
   sybilResistanceTimeseries,
+  sybilResistancePhoneTotalCount,
+  sybilResistancePhoneTimeseries,
 };
