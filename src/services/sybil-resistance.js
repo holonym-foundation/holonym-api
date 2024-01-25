@@ -2,6 +2,7 @@ import express from "express";
 import { ethers } from "ethers";
 import { thisAddress, providers } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
+import { blocklistGetAddress } from "../utils/dynamodb.js";
 import {
   sybilResistanceAddrsByNetwork,
   sybilResistancePhoneAddrsByNetwork,
@@ -9,35 +10,44 @@ import {
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 
 async function sybilResistanceGovId(req, res) {
-  logWithTimestamp("sybilResistanceGovId: Entered");
-  if (!req.query.user) {
-    logWithTimestamp("sybilResistanceGovId: No user in query params. Exiting");
-    return res
-      .status(400)
-      .json({ error: "Request query params do not include user address" });
-  }
-  if (!req.query["action-id"]) {
-    logWithTimestamp("sybilResistanceGovId: No action-id in query params. Exiting");
-    return res
-      .status(400)
-      .json({ error: "Request query params do not include action-id" });
-  }
-  if (!assertValidAddress(req.query.user)) {
-    logWithTimestamp("sybilResistanceGovId: Invalid address. Exiting");
-    return res.status(400).json({ error: "Invalid user address" });
-  }
-  if (!parseInt(req.query["action-id"])) {
-    logWithTimestamp("sybilResistanceGovId: Invalid action-id. Exiting");
-    return res.status(400).json({ error: "Invalid action-id" });
-  }
-  const contractAddr = sybilResistanceAddrsByNetwork[req.params.network];
-  const provider = providers[req.params.network];
   try {
-    const contract = new ethers.Contract(contractAddr, AntiSybilStoreABI, provider);
-    const isUnique = await contract.isUniqueForAction(
-      req.query.user,
-      req.query["action-id"]
+    const address = req.query.user;
+    const actionId = req.query["action-id"];
+    if (!address) {
+      return res
+        .status(400)
+        .json({ error: "Request query params do not include user address" });
+    }
+    if (!actionId) {
+      return res
+        .status(400)
+        .json({ error: "Request query params do not include action-id" });
+    }
+    if (!assertValidAddress(address)) {
+      return res.status(400).json({ error: "Invalid user address" });
+    }
+    if (!parseInt(actionId)) {
+      return res.status(400).json({ error: "Invalid action-id" });
+    }
+
+    // Check blocklist first
+    const result = await blocklistGetAddress(address);
+    if (result.Item) {
+      return res.status(200).json({ result: false });
+    }
+
+    const network = req.params.network;
+
+    const provider = providers[network];
+
+    const v1ContractAddr = sybilResistanceAddrsByNetwork[network];
+    const v1Contract = new ethers.Contract(
+      v1ContractAddr,
+      AntiSybilStoreABI,
+      provider
     );
+    const isUnique = await v1Contract.isUniqueForAction(address, actionId);
+
     return res.status(200).json({ result: isUnique });
   } catch (err) {
     console.log(err);
