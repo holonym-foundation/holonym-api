@@ -7,7 +7,13 @@ import {
   sybilResistanceAddrsByNetwork,
   sybilResistancePhoneAddrsByNetwork,
 } from "../constants/contractAddresses.js";
+import {
+  hubV3Address,
+  govIdIssuerAddress,
+  v3KYCSybilResistanceCircuitId,
+} from "../constants/misc.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
+import HubV3ABI from "../constants/HubV3ABI.js";
 
 async function sybilResistanceGovId(req, res) {
   try {
@@ -31,8 +37,8 @@ async function sybilResistanceGovId(req, res) {
     }
 
     // Check blocklist first
-    const result = await blocklistGetAddress(address);
-    if (result.Item) {
+    const blockListResult = await blocklistGetAddress(address);
+    if (blockListResult.Item) {
       return res.status(200).json({ result: false });
     }
 
@@ -40,6 +46,7 @@ async function sybilResistanceGovId(req, res) {
 
     const provider = providers[network];
 
+    // Check v1/v2 contract
     const v1ContractAddr = sybilResistanceAddrsByNetwork[network];
     const v1Contract = new ethers.Contract(
       v1ContractAddr,
@@ -48,7 +55,29 @@ async function sybilResistanceGovId(req, res) {
     );
     const isUnique = await v1Contract.isUniqueForAction(address, actionId);
 
-    return res.status(200).json({ result: isUnique });
+    if (isUnique || network !== "optimism") {
+      return res.status(200).json({ result: isUnique });
+    }
+
+    // Check v3 contract
+    try {
+      const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
+
+      const sbt = await hubV3Contract.getSBT(address, v3KYCSybilResistanceCircuitId);
+
+      const publicValues = sbt[1];
+      const issuerAddress = publicValues[4];
+
+      return res
+        .status(200)
+        .json({ result: govIdIssuerAddress === issuerAddress.toHexString() });
+    } catch (err) {
+      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+        return res.status(200).json({ result: false });
+      }
+
+      throw err;
+    }
   } catch (err) {
     console.log(err);
     logWithTimestamp(
