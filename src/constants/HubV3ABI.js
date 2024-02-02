@@ -21,7 +21,7 @@ export default [
   "function safeTransferFrom(address,address,uint256)",
   "function safeTransferFrom(address,address,uint256,bytes)",
   "function sbtOwners(bytes32) view returns (uint256, bool)",
-  "function sendSBT(bytes32,uint256,uint256,uint256,uint256,uint256[],bytes) payable",
+  "function setSBT(bytes32,uint256,uint256,uint256,uint256,uint256[],bytes) payable",
   "function setApprovalForAll(address,bool)",
   "function setFee(bytes32,uint256)",
   "function supportsInterface(bytes4) view returns (bool)",
