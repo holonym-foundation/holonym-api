@@ -1,6 +1,6 @@
 export const defaultActionId = 123456789;
 
-export const hubV3Address = "0x06E370E885C994F13111F0329e0A85afA57b4074";
+export const hubV3Address = "0x2AA822e264F8cc31A2b9C22f39e5551241e94DfB";
 export const hubV3Chain = 10;
 
 export const govIdIssuerAddress =
