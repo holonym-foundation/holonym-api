@@ -30,4 +30,5 @@ export default [
   "function transferFrom(address,address,uint256)",
   "function transferOwnership(address)",
   "function usedNullifiers(uint256) view returns (bool)",
+  "function getSBTByNullifier(uint256 nullifier) view returns (tuple(uint256 expiry, uint256[] publicValues, bool revoked) sbt)",
 ];
