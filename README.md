@@ -82,7 +82,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 - Example
 
   ```JavaScript
-  const resp = await fetch('https://api.holonym.io/sybil-resistance/gov-id/optimism?user=0x0000000000000000000000000000000000000000&action-id=12345678');
+  const resp = await fetch('https://api.holonym.io/sybil-resistance/gov-id/optimism?action-id=12345678&user=0x0000000000000000000000000000000000000000');
   const { result: isUnique } = await resp.json();
   ```
 
