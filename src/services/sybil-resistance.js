@@ -66,11 +66,15 @@ async function sybilResistanceGovId(req, res) {
       const sbt = await hubV3Contract.getSBT(address, v3KYCSybilResistanceCircuitId);
 
       const publicValues = sbt[1];
-      const issuerAddress = publicValues[4];
+      const actionIdInSBT = publicValues[2].toString();
+      const issuerAddress = publicValues[4].toHexString();
 
-      return res
-        .status(200)
-        .json({ result: govIdIssuerAddress === issuerAddress.toHexString() });
+      const actionIdIsValid = actionId == actionIdInSBT;
+      const issuerIsValid = govIdIssuerAddress == issuerAddress;
+
+      return res.status(200).json({
+        result: issuerIsValid && actionIdIsValid,
+      });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
         return res.status(200).json({ result: false });
