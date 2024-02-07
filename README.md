@@ -302,8 +302,22 @@ Returns `isUnique`, a boolean indicating whether the user is unique for the give
 - Example
 
   ```JavaScript
-  const resp2 = await fetch('https://api.holonym.io/attestation/sbts/gov-id?action-id=123456789&user=0xdbd6b2c02338919EdAa192F5b60F5e5840A50079')
+  const actionId = 123456789
+  const userAddress = '0xdbd6b2c02338919EdAa192F5b60F5e5840A50079'
+  const resp = await fetch(`https://api.holonym.io/attestation/sbts/gov-id?action-id=${actionId}&user=${userAddress}`)
   const { isUnique, signature } = await resp.json();
+
+  // Verify using ethers v5
+  const digest = ethers.utils.solidityKeccak256(
+    ["uint256", "address"],
+    [actionId, userAddress]
+  );
+  const personalSignPreimage = ethers.utils.solidityKeccak256(
+    ["string", "bytes32"],
+    ["\x19Ethereum Signed Message:\n32", digest]
+  );
+  const recovered = ethers.utils.recoverAddress(personalSignPreimage, signature)
+  console.log(recovered === '0xa74772264f896843c6346ceA9B13e0128A1d3b5D')
   ```
 
 - Responses
