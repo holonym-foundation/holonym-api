@@ -17,6 +17,8 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/snapshot-strategies/residence/country/us`
 - **GET** `/snapshot-strategies/sybil-resistance/gov-id`
 - **GET** `/snapshot-strategies/sybil-resistance/phone`
+- **GET** `/attestation/attestor`
+- **GET** `/attestation/sbts/gov-id`
 
 ### **GET** `/residence/country/us/<network>?user=<user-address>`
 
@@ -281,6 +283,45 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
             "score" : 1
           }
       ]
+    }
+    ```
+
+### **GET** `/attestation/attestor`
+
+- Example
+
+  ```JavaScript
+  const resp = await fetch('https://api.holonym.io/attestation/attestor');
+  const { address } = await resp.json();
+  ```
+
+### **GET** `/attestation/sbts/gov-id?action-id=<action-id>&user=<user-address>`
+
+Returns `isUnique`, a boolean indicating whether the user is unique for the given action ID using government ID, and (only if the user is unique) `signature`, the attestor's personal_sign signature of the concatenation of `action-id` and `user-address`.
+
+- Example
+
+  ```JavaScript
+  const resp2 = await fetch('https://api.holonym.io/attestation/sbts/gov-id?action-id=123456789&user=0xdbd6b2c02338919EdAa192F5b60F5e5840A50079')
+  const { isUnique, signature } = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+      "isUnique" : true,
+      "signature": "0x123..."
+    }
+    ```
+
+  - 200
+
+    ```JSON
+    {
+      "isUnique" : false,
     }
     ```
 
