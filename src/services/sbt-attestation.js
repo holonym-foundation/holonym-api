@@ -101,7 +101,7 @@ export async function sybilResistanceGovIdSBT(req, res) {
   }
 }
 
-export async function getAttestorAddress(req, res) {
+export async function getAttestor(req, res) {
   try {
     const attestor = new ethers.Wallet(process.env.ATTESTOR_PRIVATE_KEY);
     return res.status(200).json({ address: attestor.address });
