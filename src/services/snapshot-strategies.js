@@ -2,7 +2,14 @@ import express from "express";
 import { ethers } from "ethers";
 import { thisAddress, providers } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
-import { defaultActionId } from "../constants/misc.js";
+import {
+  defaultActionId,
+  hubV3Address,
+  govIdIssuerAddress,
+  v3KYCSybilResistanceCircuitId,
+  v3PhoneSybilResistanceCircuitId,
+  phoneIssuerAddress,
+} from "../constants/misc.js";
 import {
   resStoreAddrsByNetwork,
   sybilResistanceAddrsByNetwork,
@@ -10,6 +17,7 @@ import {
 } from "../constants/contractAddresses.js";
 import ResidencyStoreABI from "../constants/ResidencyStoreABI.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
+import HubV3ABI from "../constants/HubV3ABI.js";
 
 /**
  * Query params: network, snapshot, addresses.
@@ -122,7 +130,32 @@ async function sybilResistanceGovId(req, res) {
   const addresses = req.query.addresses.split(",");
   for (const address of addresses) {
     try {
-      const isUnique = await contract.isUniqueForAction(address, actionId); //, overrides);
+      // Check v1/v2 contract
+      const isUniqueV1 = await contract.isUniqueForAction(address, actionId); //, overrides);
+
+      // Check v3 contract
+      let isUniqueV3 = false;
+      try {
+        const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
+
+        const sbt = await hubV3Contract.getSBT(address, v3KYCSybilResistanceCircuitId);
+
+        const publicValues = sbt[1];
+        const actionIdInSBT = publicValues[2].toString();
+        const issuerAddress = publicValues[4].toHexString();
+
+        const actionIdIsValid = actionId == actionIdInSBT;
+        const issuerIsValid = govIdIssuerAddress == issuerAddress;
+
+        isUniqueV3 = issuerIsValid && actionIdIsValid;
+      } catch (err) {
+        if (!(err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+          throw err;
+        }
+      }
+
+      const isUnique = isUniqueV1 || isUniqueV3;
+
       scores.push({ address: address, score: isUnique ? 1 : 0 });
     } catch (err) {
       console.log(err);
@@ -180,7 +213,35 @@ async function sybilResistancePhone(req, res) {
   const addresses = req.query.addresses.split(",");
   for (const address of addresses) {
     try {
-      const isUnique = await contract.isUniqueForAction(address, actionId); //, overrides);
+      // Check v1/v2 contract
+      const isUniqueV1 = await contract.isUniqueForAction(address, actionId); //, overrides);
+
+      // Check v3 contract
+      let isUniqueV3 = false;
+      try {
+        const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
+
+        const sbt = await hubV3Contract.getSBT(
+          address,
+          v3PhoneSybilResistanceCircuitId
+        );
+
+        const publicValues = sbt[1];
+        const actionIdInSBT = publicValues[2].toString();
+        const issuerAddress = publicValues[4].toHexString();
+
+        const actionIdIsValid = actionId == actionIdInSBT;
+        const issuerIsValid = phoneIssuerAddress == issuerAddress;
+
+        isUniqueV3 = issuerIsValid && actionIdIsValid;
+      } catch (err) {
+        if (!(err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+          throw err;
+        }
+      }
+
+      const isUnique = isUniqueV1 || isUniqueV3;
+
       scores.push({ address: address, score: isUnique ? 1 : 0 });
     } catch (err) {
       console.log(err);
