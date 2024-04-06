@@ -16,3 +16,8 @@ export const v3KYCSybilResistanceCircuitId =
   "0x729d660e1c02e4e419745e617d643f897a538673ccf1051e093bbfa58b0a120b";
 export const v3PhoneSybilResistanceCircuitId =
   "0xbce052cf723dca06a21bd3cf838bc518931730fb3db7859fc9cc86f0d5483495";
+export const v3EPassportSybilResistanceCircuitId =
+  "0xf2ce248b529343e105f7b3c16459da619281c5f81cf716d28f7df9f87667364d";
+
+export const ePassportIssuerMerkleRoot = 
+  "0x111abc2c2de1738067395fa944c07ce6e44c4a38accfed392797bb94cee2cdac";
