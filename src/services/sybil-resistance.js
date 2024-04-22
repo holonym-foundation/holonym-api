@@ -63,10 +63,10 @@ async function sybilResistanceGovId(req, res) {
       return res.status(200).json({ result: isUnique });
     }
 
-    // Check v3 contract
-    try {
-      const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
+    const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
 
+    // Check v3 contract for KYC SBT
+    try {
       const sbt = await hubV3Contract.getSBT(address, v3KYCSybilResistanceCircuitId);
 
       const publicValues = sbt[1];
@@ -78,6 +78,20 @@ async function sybilResistanceGovId(req, res) {
 
       return res.status(200).json({
         result: issuerIsValid && actionIdIsValid,
+      });
+    } catch (err) {
+      // Do nothing
+    }
+
+    // Check v3 contract for ePassport SBT
+    try {
+      const sbt = await hubV3Contract.getSBT(address, v3EPassportSybilResistanceCircuitId);
+
+      const publicValues = sbt[1];
+      const merkleRoot = publicValues[2].toHexString();
+
+      return res.status(200).json({
+        result: merkleRoot === ePassportIssuerMerkleRoot
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
