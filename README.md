@@ -74,12 +74,12 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 
 - Parameters
 
-  | name              | description                     | type   | in    | required |
-  | ----------------- | ------------------------------- | ------ | ----- | -------- |
-  | `credential-type` | 'gov-id' or 'phone'             | string | path  | true     |
-  | `network`         | 'optimism' or 'optimism-goerli' | string | path  | true     |
-  | `user`            | User's blockchain address       | string | query | true     |
-  | `action-id`       | Action ID                       | string | query | true     |
+  | name              | description                       | type   | in    | required |
+  | ----------------- | --------------------------------- | ------ | ----- | -------- |
+  | `credential-type` | 'gov-id', 'epassport', or 'phone' | string | path  | true     |
+  | `network`         | 'optimism' or 'optimism-goerli'   | string | path  | true     |
+  | `user`            | User's blockchain address         | string | query | true     |
+  | `action-id`       | Action ID                         | string | query | true     |
 
 - Example
 
