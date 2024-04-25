@@ -76,9 +76,9 @@ async function sybilResistanceGovId(req, res) {
       const actionIdIsValid = actionId == actionIdInSBT;
       const issuerIsValid = govIdIssuerAddress == issuerAddress;
 
-      return res.status(200).json({
-        result: issuerIsValid && actionIdIsValid,
-      });
+      if (actionIdIsValid && issuerIsValid) {
+        return res.status(200).json({ result: true });
+      }
     } catch (err) {
       // Do nothing
     }
