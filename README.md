@@ -21,48 +21,6 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/attestation/attestor`
 - **GET** `/attestation/sbts/gov-id`
 
-### **GET** `/residence/country/us/<network>?user=<user-address>`
-
-Get whether the user resides in the US.
-
-For the `/residence/country/<country-code>` endpoints, `<country-code>` will be a 2-letter country code following the [ISO 3166 standard](https://www.iso.org/iso-3166-country-codes.html). Holonym currently only supports queries for US residency.
-
-- Parameters
-
-  | name      | description                     | type   | in    | required |
-  | --------- | ------------------------------- | ------ | ----- | -------- |
-  | `network` | 'optimism' or 'optimism-goerli' | string | path  | true     |
-  | `user`    | User's blockchain address       | string | query | true     |
-
-- Example
-
-  ```JavaScript
-  const resp = await fetch('https://api.holonym.io/residence/country/us/optimism?user=0x0000000000000000000000000000000000000000');
-  const { result: isUSResident } = await resp.json();
-  ```
-
-- Responses
-
-  - 200
-
-    Result if user resides in the US.
-
-    ```JSON
-    {
-        "result": true,
-    }
-    ```
-
-  - 200
-
-    Result if user has not submitted a valid proof that they reside in the US.
-
-    ```JSON
-    {
-        "result": false,
-    }
-    ```
-
 ### **GET** `/sybil-resistance/<credential-type>/<network>?user=<user-address>&action-id=<action-id>`
 
 Get whether the user has registered for the given action-id.
@@ -102,6 +60,48 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
   - 200
 
     Result if user has not submitted a valid proof.
+
+    ```JSON
+    {
+        "result": false,
+    }
+    ```
+
+### **GET** `/residence/country/us/<network>?user=<user-address>`
+
+Get whether the user resides in the US.
+
+For the `/residence/country/<country-code>` endpoints, `<country-code>` will be a 2-letter country code following the [ISO 3166 standard](https://www.iso.org/iso-3166-country-codes.html). Holonym currently only supports queries for US residency.
+
+- Parameters
+
+  | name      | description                     | type   | in    | required |
+  | --------- | ------------------------------- | ------ | ----- | -------- |
+  | `network` | 'optimism' or 'optimism-goerli' | string | path  | true     |
+  | `user`    | User's blockchain address       | string | query | true     |
+
+- Example
+
+  ```JavaScript
+  const resp = await fetch('https://api.holonym.io/residence/country/us/optimism?user=0x0000000000000000000000000000000000000000');
+  const { result: isUSResident } = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+    Result if user resides in the US.
+
+    ```JSON
+    {
+        "result": true,
+    }
+    ```
+
+  - 200
+
+    Result if user has not submitted a valid proof that they reside in the US.
 
     ```JSON
     {
