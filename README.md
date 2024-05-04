@@ -11,10 +11,10 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
 ## Endpoints
 
-- **GET** `/residence/country/us/<network>`
 - **GET** `/sybil-resistance/gov-id/<network>`
 - **GET** `/sybil-resistance/epassport/<network>`
 - **GET** `/sybil-resistance/phone/<network>`
+- **GET** `/residence/country/us/<network>`
 - **GET** `/snapshot-strategies/residence/country/us`
 - **GET** `/snapshot-strategies/sybil-resistance/gov-id`
 - **GET** `/snapshot-strategies/sybil-resistance/phone`
