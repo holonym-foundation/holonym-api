@@ -6,6 +6,7 @@ import sybilResistance from "./routes/sybil-resistance.js";
 import snapshotStrategies from "./routes/snapshot-strategies.js";
 import metrics from "./routes/metrics.js";
 import sbtAttestation from "./routes/sbt-attestation.js";
+import sbts from "./routes/sbts.js";
 
 // ----------------------------
 // Setup express app
@@ -27,6 +28,7 @@ app.use("/sybil-resistance", sybilResistance);
 app.use("/snapshot-strategies", snapshotStrategies);
 app.use("/metrics", metrics);
 app.use("/attestation", sbtAttestation);
+app.use("/sbts", sbts);
 
 app.get("/", (req, res) => {
   console.log(`${new Date().toISOString()} GET /`);

@@ -11,6 +11,7 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
 ## Endpoints
 
+- **GET** `/sbts/<credential-type>/`
 - **GET** `/sybil-resistance/gov-id/<network>`
 - **GET** `/sybil-resistance/epassport/<network>`
 - **GET** `/sybil-resistance/phone/<network>`
@@ -20,6 +21,45 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/snapshot-strategies/sybil-resistance/phone`
 - **GET** `/attestation/attestor`
 - **GET** `/attestation/sbts/gov-id`
+
+### **GET** `/sbts/<credential-type>?address=<user-address>`
+
+(Differs slightly from sybil-resistance endpoints.)
+
+- Parameters
+
+  | name              | description                    | type   | in    | required |
+  | ----------------- | ------------------------------ | ------ | ----- | -------- |
+  | `credential-type` | 'kyc', 'epassport', or 'phone' | string | path  | true     |
+  | `address`         | User's blockchain address      | string | query | true     |
+
+- Example
+
+  ```JavaScript
+  const resp = await fetch('https://api.holonym.io/sbts/kyc?address=0x0000000000000000000000000000000000000000');
+  const { hasValidSbt, message } = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+        "hasValidSbt": true,
+    }
+    ```
+
+  - 200
+
+    Result if user's SBT has expired
+
+    ```JSON
+    {
+        "hasValidSbt": false,
+        "message": "SBT is expired or does not exist" 
+    }
+    ```
 
 ### **GET** `/sybil-resistance/<credential-type>/<network>?user=<user-address>&action-id=<action-id>`
 
