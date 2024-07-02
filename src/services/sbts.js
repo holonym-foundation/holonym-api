@@ -127,7 +127,7 @@ export async function getHasValidEPassportSbt(req, res) {
       const isRevoked = sbt[2];
 
       return res.status(200).json({
-        hasValidSbt: merkleRoot === ePassportIssuerMerkleRoot && !isRevoked && !isExpired,
+        hasValidSbt: (merkleRoot === ePassportIssuerMerkleRoot) && !isRevoked && !isExpired,
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
