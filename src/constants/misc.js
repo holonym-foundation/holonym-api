@@ -18,6 +18,12 @@ export const v3PhoneSybilResistanceCircuitId =
   "0xbce052cf723dca06a21bd3cf838bc518931730fb3db7859fc9cc86f0d5483495";
 export const v3EPassportSybilResistanceCircuitId =
   "0xf2ce248b529343e105f7b3c16459da619281c5f81cf716d28f7df9f87667364d";
+export const v3CleanHandsCircuitId = 
+  "0x1c98fc4f7f1ad3805aefa81ad25fa466f8342292accf69566b43691d12742a19";
 
 export const ePassportIssuerMerkleRoot = 
   "0x111abc2c2de1738067395fa944c07ce6e44c4a38accfed392797bb94cee2cdac";
+
+export const zeronymCleanHandsEthSignSchemaId = "onchain_evm_10_0x8";
+
+export const zeronymRelayerAddress = "0xB1f50c6C34C72346b1229e5C80587D0D659556Fd";

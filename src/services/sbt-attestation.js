@@ -1,3 +1,4 @@
+import axios from "axios";
 import { ethers } from "ethers";
 import { providers } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
@@ -10,9 +11,13 @@ import {
   v3KYCSybilResistanceCircuitId,
   v3PhoneSybilResistanceCircuitId,
   v3EPassportSybilResistanceCircuitId,
+  v3CleanHandsCircuitId,
   ePassportIssuerMerkleRoot,
+  zeronymCleanHandsEthSignSchemaId,
+  zeronymRelayerAddress,
 } from "../constants/misc.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
+import SignProtocolABI from "../constants/SignProtocolABI.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
 
 function sign(circuitId, actionId, address) {
@@ -203,6 +208,86 @@ export async function sybilResistancePhoneSBT(req, res) {
       }
 
       return res.status(200).json({ isUnique });
+    } catch (err) {
+      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+        return res.status(200).json({ isUnique: false });
+      }
+
+      throw err;
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
+export async function cleanHandsAttestation(req, res) {
+  try {
+    const result = parseV3SbtParams(req);
+    if (result.error) return res.status(400).json({ error: result.error });
+    const { address, actionId } = result;
+
+    // Check blocklist first
+    const blockListResult = await blocklistGetAddress(address);
+    if (blockListResult.Item) {
+      return res.status(200).json({ isUnique: false });
+    }
+
+    try {
+      // Query EthSign scan API for user's address
+      let resp = null;
+      try {
+        resp = await axios.get(`https://mainnet-rpc.sign.global/api/scan/addresses/${address}/attestations`)
+      } catch (err) {
+        // If 404, user has no attestations
+        if (err.response.status == 404) {
+          return res.status(200).json({ isUnique: false });
+        }
+      }
+
+      // TODO: If user has many attestations, we should check each page.
+      // See: https://docs.sign.global/developer-apis/index/api/get/scan#query-paged-attestations
+
+      // Filter for attestations with the correct schemaId
+      const cleanHandsAttestations = resp.data.data.rows.filter((att) => (
+        att.fullSchemaId == zeronymCleanHandsEthSignSchemaId &&
+        att.attester == zeronymRelayerAddress &&
+        att.isReceiver == true && 
+        !att.revoked &&
+        att.validUntil > (new Date().getTime() / 1000)
+      ))
+
+      if (cleanHandsAttestations.length == 0) {
+        return res.status(200).json({ isUnique: false });
+      }
+
+      // Call the smart contract directly to be 100% sure the user has the attestation
+      const signProtocolOpAddr = '0x945C44803E92a3495C32be951052a62E45A5D964'
+      const contract = new ethers.Contract(
+        signProtocolOpAddr,
+        SignProtocolABI,
+        providers.optimism
+      );
+      const attestationId = cleanHandsAttestations[0].attestationId;
+      const attestation = await contract.getAttestation(attestationId);
+
+      // If it's valid, sign and return
+
+      // Sign Protocol attestation recipients are encoded as bytes32, so we need to decode
+      const decodedRecipient = new TextDecoder().decode(
+        ethers.utils.arrayify(attestation.recipients[0])
+      ).replaceAll('\x00', '').trim().replace('*', '');
+      console.log({ decodedRecipient })
+      if (decodedRecipient.toLowerCase() != address.toLowerCase()) {
+        return res.status(200).json({ isUnique: false });
+      }
+
+      const signature = sign(v3CleanHandsCircuitId, actionId, address);
+      return res.status(200).json({ 
+        isUnique: true, 
+        signature,
+        circuitId: v3CleanHandsCircuitId
+      });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
         return res.status(200).json({ isUnique: false });
