@@ -345,13 +345,13 @@ Returns `isUnique`, a boolean indicating whether the user is unique for the give
   ```JavaScript
   const actionId = 123456789
   const userAddress = '0xdbd6b2c02338919EdAa192F5b60F5e5840A50079'
-  const resp = await fetch(`https://api.holonym.io/attestation/sbts/gov-id?action-id=${actionId}&user=${userAddress}`)
-  const { isUnique, signature } = await resp.json();
+  const resp = await fetch(`https://api.holonym.io/attestation/sbts/gov-id?action-id=${actionId}&address=${userAddress}`)
+  const { isUnique, signature, circuitId } = await resp.json();
 
   // Verify using ethers v5
   const digest = ethers.utils.solidityKeccak256(
-    ["uint256", "address"],
-    [actionId, userAddress]
+    ["uint256", "uint256", "address"],
+    [circuitId, actionId, userAddress]
   );
   const personalSignPreimage = ethers.utils.solidityKeccak256(
     ["string", "bytes32"],
