@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/sbts/gov-id/", sybilResistanceGovIdSBT);
 router.get("/sbts/e-passport/", sybilResistanceEPassportSBT);
 router.get("/sbts/phone/", sybilResistancePhoneSBT);
-router.get("/clean-hands", cleanHandsAttestation);
+router.get("/sbts/clean-hands", cleanHandsAttestation);
 router.get("/attestor", getAttestor);
 
 export default router;
