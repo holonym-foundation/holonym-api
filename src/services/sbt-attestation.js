@@ -221,6 +221,11 @@ export async function sybilResistancePhoneSBT(req, res) {
   }
 }
 
+function scanSpAttestations(address, page) {
+  const queryParams = page ? `?page=${page}` : '';
+  return axios.get(`https://mainnet-rpc.sign.global/api/scan/addresses/${address}/attestations${queryParams}`)
+}
+
 export async function cleanHandsAttestation(req, res) {
   try {
     const result = parseV3SbtParams(req);
@@ -234,29 +239,40 @@ export async function cleanHandsAttestation(req, res) {
     }
 
     try {
-      // Query EthSign scan API for user's address
-      let resp = null;
-      try {
-        resp = await axios.get(`https://mainnet-rpc.sign.global/api/scan/addresses/${address}/attestations`)
-      } catch (err) {
-        // If 404, user has no attestations
-        if (err.response.status == 404) {
-          return res.status(200).json({ isUnique: false });
+      let cleanHandsAttestations = [];
+      let hasMorePages = true;
+      while (hasMorePages) {
+        // Query EthSign scan API for user's address
+        let resp = null;
+        try {
+          resp = await scanSpAttestations(address);
+        } catch (err) {
+          console.log('err', err.response.status, err.response.data)
+          // If 404, user has no attestations
+          if (err.response.status == 404) {
+            return res.status(200).json({ isUnique: false });
+          }
         }
+        
+        // total == total attestations; page == current page; size == num attestations per page
+        hasMorePages = resp.data.data.total > resp.data.data.page * resp.data.data.size;
+
+        // Filter for attestations with the correct schemaId
+        cleanHandsAttestations = resp.data.data.rows.filter((att) => (
+          att.fullSchemaId == zeronymCleanHandsEthSignSchemaId &&
+          att.attester == zeronymRelayerAddress &&
+          att.isReceiver == true && 
+          !att.revoked &&
+          att.validUntil > (new Date().getTime() / 1000)
+        ))
+
+        if (cleanHandsAttestations.length > 0 || !hasMorePages) {
+          break;
+        }
+
+        resp = await scanSpAttestations(address, resp.data.data.page + 1);        
       }
-
-      // TODO: If user has many attestations, we should check each page.
-      // See: https://docs.sign.global/developer-apis/index/api/get/scan#query-paged-attestations
-
-      // Filter for attestations with the correct schemaId
-      const cleanHandsAttestations = resp.data.data.rows.filter((att) => (
-        att.fullSchemaId == zeronymCleanHandsEthSignSchemaId &&
-        att.attester == zeronymRelayerAddress &&
-        att.isReceiver == true && 
-        !att.revoked &&
-        att.validUntil > (new Date().getTime() / 1000)
-      ))
-
+      
       if (cleanHandsAttestations.length == 0) {
         return res.status(200).json({ isUnique: false });
       }
@@ -277,7 +293,6 @@ export async function cleanHandsAttestation(req, res) {
       const decodedRecipient = new TextDecoder().decode(
         ethers.utils.arrayify(attestation.recipients[0])
       ).replaceAll('\x00', '').trim().replace('*', '');
-      console.log({ decodedRecipient })
       if (decodedRecipient.toLowerCase() != address.toLowerCase()) {
         return res.status(200).json({ isUnique: false });
       }
