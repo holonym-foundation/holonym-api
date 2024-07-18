@@ -238,6 +238,18 @@ export async function cleanHandsAttestation(req, res) {
       return res.status(200).json({ isUnique: false });
     }
 
+    // TODO: Remove this block once we finish testing
+    const whitelist = ['0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266']
+    if (whitelist.includes(address.toLowerCase())) {
+      const signature = sign(v3CleanHandsCircuitId, actionId, address);
+      return res.status(200).json({ 
+        isUnique: true, 
+        signature,
+        circuitId: v3CleanHandsCircuitId
+      });
+    }
+    // END TODO
+
     try {
       let cleanHandsAttestations = [];
       let hasMorePages = true;
