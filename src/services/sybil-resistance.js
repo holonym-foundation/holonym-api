@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { thisAddress, providers } from "../init.js";
 import { logWithTimestamp, assertValidAddress } from "../utils/utils.js";
 import { blocklistGetAddress } from "../utils/dynamodb.js";
+import { viewHubV3Sbt } from "../utils/near.js";
 import {
   sybilResistanceAddrsByNetwork,
   sybilResistancePhoneAddrsByNetwork,
@@ -19,8 +20,78 @@ import {
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
 
+async function sybilResistanceGovIdNear(req, res) {
+  const user = req.query.user;
+
+  // Check for KYC SBT
+  try {
+    const sbt = await viewHubV3Sbt(
+      user,
+      new Array(...ethers.utils.arrayify(v3KYCSybilResistanceCircuitId))
+    );
+
+    const expiry = sbt.expiry;
+    const publicValues = sbt.public_values;
+
+    const actionIdInSBT = ethers.utils.hexlify(publicValues[2]);
+    const issuerAddress = ethers.utils.hexlify(publicValues[4]);
+
+    const expired = expiry < Date.now() / 1000;
+    const actionIdIsValid = actionId == actionIdInSBT;
+    const issuerIsValid = govIdIssuerAddress == issuerAddress;
+
+    return res.status(200).json({
+      result: !expired && actionIdIsValid && issuerIsValid,
+    });
+  } catch (err) {
+    if ((err?.message ?? "").includes("SBT does not exist")) {
+      // Do nothing
+    } else {
+      console.log(err);
+      res.status(500).json({ error: "An unexpected error occured" });
+    }
+  }
+
+  // Check for ePassport SBT
+  try {
+    const sbt = await viewHubV3Sbt(
+      user,
+      new Array(...ethers.utils.arrayify(v3EPassportSybilResistanceCircuitId))
+    );
+
+    const expiry = sbt.expiry;
+    const publicValues = sbt.public_values;
+
+    const expired = expiry < Date.now() / 1000;
+    const validRoot =
+      ethers.utils.hexlify(publicValues[2]) === ePassportIssuerMerkleRoot;
+
+    return res.status(200).json({
+      result: !expired && validRoot,
+    });
+  } catch (err) {
+    if ((err?.message ?? "").includes("SBT does not exist")) {
+      console.log(err);
+      return res.status(200).json({ result: false });
+    }
+
+    console.log(err);
+    res.status(500).json({ error: "An unexpected error occured" });
+  }
+
+  return res.status(200).json({ result: false });
+}
+
+// ---------------------------------------------
+// Endpoints
+// ---------------------------------------------
+
 async function sybilResistanceGovId(req, res) {
   try {
+    if (req.params.network === "near") {
+      return await sybilResistanceGovIdNear(req, res);
+    }
+
     const address = req.query.user;
     const actionId = req.query["action-id"];
     if (!address) {
@@ -85,13 +156,16 @@ async function sybilResistanceGovId(req, res) {
 
     // Check v3 contract for ePassport SBT
     try {
-      const sbt = await hubV3Contract.getSBT(address, v3EPassportSybilResistanceCircuitId);
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3EPassportSybilResistanceCircuitId
+      );
 
       const publicValues = sbt[1];
       const merkleRoot = publicValues[2].toHexString();
 
       return res.status(200).json({
-        result: merkleRoot === ePassportIssuerMerkleRoot
+        result: merkleRoot === ePassportIssuerMerkleRoot,
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
@@ -144,13 +218,16 @@ async function sybilResistanceEPassport(req, res) {
     try {
       const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
 
-      const sbt = await hubV3Contract.getSBT(address, v3EPassportSybilResistanceCircuitId);
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3EPassportSybilResistanceCircuitId
+      );
 
       const publicValues = sbt[1];
       const merkleRoot = publicValues[2].toHexString();
 
       return res.status(200).json({
-        result: merkleRoot === ePassportIssuerMerkleRoot
+        result: merkleRoot === ePassportIssuerMerkleRoot,
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
@@ -240,8 +317,4 @@ async function sybilResistancePhone(req, res) {
   }
 }
 
-export {
-  sybilResistanceGovId,
-  sybilResistanceEPassport,
-  sybilResistancePhone
-};
+export { sybilResistanceGovId, sybilResistanceEPassport, sybilResistancePhone };
