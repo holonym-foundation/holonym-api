@@ -48,7 +48,7 @@ async function sybilResistanceGovIdNear(req, res) {
       // Do nothing
     } else {
       console.log(err);
-      res.status(500).json({ error: "An unexpected error occured" });
+      return res.status(500).json({ error: "An unexpected error occured" });
     }
   }
 
@@ -71,15 +71,44 @@ async function sybilResistanceGovIdNear(req, res) {
     });
   } catch (err) {
     if ((err?.message ?? "").includes("SBT does not exist")) {
-      console.log(err);
       return res.status(200).json({ result: false });
     }
 
     console.log(err);
-    res.status(500).json({ error: "An unexpected error occured" });
+    return res.status(500).json({ error: "An unexpected error occured" });
   }
+}
 
-  return res.status(200).json({ result: false });
+async function sybilResistancePhoneNear(req, res) {
+  const user = req.query.user;
+
+  try {
+    const sbt = await viewHubV3Sbt(
+      user,
+      new Array(...ethers.utils.arrayify(v3PhoneSybilResistanceCircuitId))
+    );
+
+    const expiry = sbt.expiry;
+    const publicValues = sbt.public_values;
+
+    const actionIdInSBT = ethers.utils.hexlify(publicValues[2]);
+    const issuerAddress = ethers.utils.hexlify(publicValues[4]);
+
+    const expired = expiry < Date.now() / 1000;
+    const actionIdIsValid = actionId == actionIdInSBT;
+    const issuerIsValid = phoneIssuerAddress == issuerAddress;
+
+    return res.status(200).json({
+      result: !expired && actionIdIsValid && issuerIsValid,
+    });
+  } catch (err) {
+    if ((err?.message ?? "").includes("SBT does not exist")) {
+      return res.status(200).json({ result: false });
+    }
+
+    console.log(err);
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
 }
 
 // ---------------------------------------------
@@ -247,6 +276,10 @@ async function sybilResistanceEPassport(req, res) {
 
 async function sybilResistancePhone(req, res) {
   try {
+    if (req.params.network === "near") {
+      return await sybilResistancePhoneNear(req, res);
+    }
+
     const address = req.query.user;
     const actionId = req.query["action-id"];
     if (!address) {
