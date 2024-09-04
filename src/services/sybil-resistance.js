@@ -22,6 +22,7 @@ import HubV3ABI from "../constants/HubV3ABI.js";
 
 async function sybilResistanceGovIdNear(req, res) {
   const user = req.query.user;
+  const actionId = req.query["action-id"];
 
   // Check for KYC SBT
   try {
@@ -33,8 +34,9 @@ async function sybilResistanceGovIdNear(req, res) {
     const expiry = sbt.expiry;
     const publicValues = sbt.public_values;
 
-    const actionIdInSBT = ethers.utils.hexlify(publicValues[2]);
-    const issuerAddress = ethers.utils.hexlify(publicValues[4]);
+    const actionIdInSBT = BigInt(ethers.utils.hexlify(publicValues[2])).toString();
+    const issuerAddress =
+      "0x" + BigInt(ethers.utils.hexlify(publicValues[4])).toString(16);
 
     const expired = expiry < Date.now() / 1000;
     const actionIdIsValid = actionId == actionIdInSBT;
@@ -81,6 +83,7 @@ async function sybilResistanceGovIdNear(req, res) {
 
 async function sybilResistancePhoneNear(req, res) {
   const user = req.query.user;
+  const actionId = req.query["action-id"];
 
   try {
     const sbt = await viewHubV3Sbt(
@@ -91,8 +94,9 @@ async function sybilResistancePhoneNear(req, res) {
     const expiry = sbt.expiry;
     const publicValues = sbt.public_values;
 
-    const actionIdInSBT = ethers.utils.hexlify(publicValues[2]);
-    const issuerAddress = ethers.utils.hexlify(publicValues[4]);
+    const actionIdInSBT = BigInt(ethers.utils.hexlify(publicValues[2])).toString();
+    const issuerAddress =
+      "0x" + BigInt(ethers.utils.hexlify(publicValues[4])).toString(16);
 
     const expired = expiry < Date.now() / 1000;
     const actionIdIsValid = actionId == actionIdInSBT;
