@@ -31,8 +31,6 @@ export async function setKycSbt(req, res) {
       []
     );
 
-    await tx.wait();
-
     return res.status(200).json({ TransactionHash: tx.hash });
   } catch (err) {
     console.log(err);
