@@ -10,6 +10,7 @@ import {
 } from "../constants/contractAddresses.js";
 import {
   hubV3Address,
+  hubV3TestnetAddress,
   govIdIssuerAddress,
   phoneIssuerAddress,
   v3KYCSybilResistanceCircuitId,
@@ -19,6 +20,67 @@ import {
 } from "../constants/misc.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
+import HubV3TestnetABI from "../constants/HubV3TestnetABI.js";
+
+// ---------------------------------------------
+// Testnet stuff
+// ---------------------------------------------
+
+async function sybilResistanceKycTestnet(req, res) {
+  const address = req.query.user;
+  const actionId = req.query["action-id"];
+  if (!address) {
+    return res
+      .status(400)
+      .json({ error: "Request query params do not include user address" });
+  }
+  if (!actionId) {
+    return res
+      .status(400)
+      .json({ error: "Request query params do not include action-id" });
+  }
+  if (!assertValidAddress(address)) {
+    return res.status(400).json({ error: "Invalid user address" });
+  }
+  if (!parseInt(actionId)) {
+    return res.status(400).json({ error: "Invalid action-id" });
+  }
+
+  // Check blocklist first
+  // const blockListResult = await blocklistGetAddress(address);
+  // if (blockListResult.Item) {
+  //   return res.status(200).json({ result: false });
+  // }
+
+  // const network = req.params.network;
+
+  const provider = providers["base-sepolia"];
+
+  const hubV3Contract = new ethers.Contract(
+    hubV3TestnetAddress,
+    HubV3TestnetABI,
+    provider
+  );
+
+  // Check v3 contract for KYC SBT
+  try {
+    const sbt = await hubV3Contract.getSBT(address, v3KYCSybilResistanceCircuitId);
+
+    // For sandbox, we don't care about expiry or issuer or action ID. We just
+    // check whether the user has an SBT.
+
+    return res.status(200).json({ result: !!sbt });
+  } catch (err) {
+    if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+      return res.status(200).json({ result: false });
+    }
+
+    throw err;
+  }
+}
+// ---------------------------------------------
+// END: Testnet stuff
+// ---------------------------------------------
 
 async function sybilResistanceGovIdNear(req, res) {
   const user = req.query.user;
@@ -123,6 +185,8 @@ async function sybilResistanceGovId(req, res) {
   try {
     if (req.params.network === "near") {
       return await sybilResistanceGovIdNear(req, res);
+    } else if (req.params.network === "base-sepolia") {
+      return await sybilResistanceKycTestnet(req, res);
     }
 
     const address = req.query.user;

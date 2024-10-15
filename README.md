@@ -57,7 +57,7 @@ We plan to support more chains in the future. If you would like to use Holonym o
     ```JSON
     {
         "hasValidSbt": false,
-        "message": "SBT is expired or does not exist" 
+        "message": "SBT is expired or does not exist"
     }
     ```
 
@@ -76,7 +76,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
   | name              | description                       | type   | in    | required |
   | ----------------- | --------------------------------- | ------ | ----- | -------- |
   | `credential-type` | 'gov-id', 'epassport', or 'phone' | string | path  | true     |
-  | `network`         | 'optimism' or 'optimism-goerli'   | string | path  | true     |
+  | `network`         | 'optimism' or 'base-sepolia'      | string | path  | true     |
   | `user`            | User's blockchain address         | string | query | true     |
   | `action-id`       | Action ID                         | string | query | true     |
 

@@ -1,6 +1,10 @@
 import { randomBytes } from "crypto";
 import { ethers } from "ethers";
-import { v3KYCSybilResistanceCircuitId } from "../constants/misc.js";
+import {
+  hubV3TestnetAddress,
+  v3KYCSybilResistanceCircuitId,
+} from "../constants/misc.js";
+import HubV3TestnetABI from "../constants/HubV3TestnetABI.js";
 import { providers } from "../init.js";
 
 export async function setKycSbt(req, res) {
@@ -12,11 +16,11 @@ export async function setKycSbt(req, res) {
 
     const { circuitId, sbtReceiver, expiration, nullifier, publicValues } = req.body;
 
-    const abi = [
-      "function setSBT(bytes32 circuitId, address sbtReceiver, uint expiration, uint nullifier, uint[] calldata publicValues)",
-    ];
-    const address = "0x98221c937C51f5bBe615CB104435395c93b1AD8D";
-    const contract = new ethers.Contract(address, abi, testnetMinterWallet);
+    const contract = new ethers.Contract(
+      hubV3TestnetAddress,
+      HubV3TestnetABI,
+      testnetMinterWallet
+    );
 
     const tx = await contract.setSBT(
       // circuitId,

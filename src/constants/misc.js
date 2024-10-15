@@ -3,6 +3,9 @@ export const defaultActionId = 123456789;
 export const hubV3Address = "0x2AA822e264F8cc31A2b9C22f39e5551241e94DfB";
 export const hubV3Chain = 10;
 
+export const hubV3TestnetAddress = "0x98221c937C51f5bBe615CB104435395c93b1AD8D";
+export const hubV3TestnetChain = 84532;
+
 export const govIdIssuerAddress =
   "0x03fae82f38bf01d9799d57fdda64fad4ac44e4c2c2f16c5bf8e1873d0a3e1993";
 export const phoneIssuerAddress =
@@ -18,10 +21,10 @@ export const v3PhoneSybilResistanceCircuitId =
   "0xbce052cf723dca06a21bd3cf838bc518931730fb3db7859fc9cc86f0d5483495";
 export const v3EPassportSybilResistanceCircuitId =
   "0xf2ce248b529343e105f7b3c16459da619281c5f81cf716d28f7df9f87667364d";
-export const v3CleanHandsCircuitId = 
+export const v3CleanHandsCircuitId =
   "0x1c98fc4f7f1ad3805aefa81ad25fa466f8342292accf69566b43691d12742a19";
 
-export const ePassportIssuerMerkleRoot = 
+export const ePassportIssuerMerkleRoot =
   "0x111abc2c2de1738067395fa944c07ce6e44c4a38accfed392797bb94cee2cdac";
 
 export const zeronymCleanHandsEthSignSchemaId = "onchain_evm_10_0x8";
