@@ -12,6 +12,11 @@ const providers = {
     process.env.ALCHEMY_APIKEY
   ),
 };
+try {
+  providers["base-sepolia"] = new ethers.providers.JsonRpcProvider(
+    process.env.BASE_SEPOLIA_RPC_URL
+  );
+} catch (err) {}
 const signer = new ethers.Wallet(process.env.PRIVATE_KEY, providers.optimism);
 const thisAddress = signer.address;
 

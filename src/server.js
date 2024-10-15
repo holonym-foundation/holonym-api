@@ -7,6 +7,7 @@ import snapshotStrategies from "./routes/snapshot-strategies.js";
 import metrics from "./routes/metrics.js";
 import sbtAttestation from "./routes/sbt-attestation.js";
 import sbts from "./routes/sbts.js";
+import testnetMinter from "./routes/testnet-minter.js";
 
 // ----------------------------
 // Setup express app
@@ -29,6 +30,7 @@ app.use("/snapshot-strategies", snapshotStrategies);
 app.use("/metrics", metrics);
 app.use("/attestation", sbtAttestation);
 app.use("/sbts", sbts);
+app.use("/testnet-minter", testnetMinter);
 
 app.get("/", (req, res) => {
   console.log(`${new Date().toISOString()} GET /`);
