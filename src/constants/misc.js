@@ -30,3 +30,9 @@ export const ePassportIssuerMerkleRoot =
 export const zeronymCleanHandsEthSignSchemaId = "onchain_evm_10_0x8";
 
 export const zeronymRelayerAddress = "0xB1f50c6C34C72346b1229e5C80587D0D659556Fd";
+
+export const horizonServerUrl = "https://horizon.stellar.org";
+export const sorobanRpcUrl = "https://mainnet.sorobanrpc.com";
+
+export const stellarSBTContractAddress =
+  "CCNTHEVSWNDOQAMXXHFOLQIXWUINUPTJIM6AXFSKODNVXWA4N7XV3AI5";

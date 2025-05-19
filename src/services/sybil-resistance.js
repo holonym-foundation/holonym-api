@@ -21,6 +21,7 @@ import {
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
 import HubV3TestnetABI from "../constants/HubV3TestnetABI.js";
+import { getStellarSBTByAddress } from "../utils/stellar.js";
 
 // ---------------------------------------------
 // Testnet stuff
@@ -177,6 +178,68 @@ async function sybilResistancePhoneNear(req, res) {
   }
 }
 
+async function sybilResistanceGovIdStellar(req, res) {
+  const address = req.query.user;
+  const actionId = req.query["action-id"];
+
+  // TODO: Validate address
+
+  const kycSbtResult = await getStellarSBTByAddress(
+    address,
+    v3KYCSybilResistanceCircuitId
+  );
+
+  const ePassportSbtResult = await getStellarSBTByAddress(
+    address,
+    v3KYCSybilResistanceCircuitId
+  );
+
+  if (kycSbtResult?.sbt || ePassportSbtResult?.sbt) {
+    const kycActionId = kycSbtResult?.sbt?.public_values?.[2];
+    const ePassportActionId = ePassportSbtResult?.sbt?.public_values?.[2];
+    const actionIdIsValid = kycActionId == actionId || ePassportActionId == actionId;
+
+    return res.status(200).json({ result: actionIdIsValid });
+  }
+
+  // TODO: Return more granular error messages based on kycSbtResult.status and ePassportSbtResult.status
+  return res.status(200).json({
+    result: false,
+    details: `No KYC or ePassport SBT found for address ${address}`,
+  });
+}
+
+async function sybilResistancePhoneStellar(req, res) {
+  const address = req.query.user;
+  const actionId = req.query["action-id"];
+
+  // TODO: Validate address
+
+  const { sbt, status } = await getStellarSBTByAddress(
+    address,
+    v3PhoneSybilResistanceCircuitId
+  );
+
+  if (status === "none") {
+    return res
+      .status(200)
+      .json({ result: false, details: `No KYC SBT found for address ${address}` });
+  } else if (status === "expired") {
+    return res
+      .status(200)
+      .json({ status: false, details: `KYC SBT for address ${address} has expired` });
+  } else if (sbt) {
+    const sbtActionId = (sbt.public_values?.[2] ?? 0).toString();
+    if (sbtActionId == actionId) {
+      return res.status(200).json({ result: true });
+    }
+    return res.status(200).json({
+      result: false,
+      details: `actionId in SBT is ${sbtActionId}. Expected ${actionId}`,
+    });
+  }
+}
+
 // ---------------------------------------------
 // Endpoints
 // ---------------------------------------------
@@ -187,6 +250,8 @@ async function sybilResistanceGovId(req, res) {
       return await sybilResistanceGovIdNear(req, res);
     } else if (req.params.network === "base-sepolia") {
       return await sybilResistanceKycTestnet(req, res);
+    } else if (req.params.network === "stellar") {
+      return await sybilResistanceGovIdStellar(req, res);
     }
 
     const address = req.query.user;
@@ -346,6 +411,8 @@ async function sybilResistancePhone(req, res) {
   try {
     if (req.params.network === "near") {
       return await sybilResistancePhoneNear(req, res);
+    } else if (req.params.network === "stellar") {
+      return await sybilResistancePhoneStellar(req, res);
     }
 
     const address = req.query.user;
