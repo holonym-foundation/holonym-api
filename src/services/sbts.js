@@ -12,9 +12,11 @@ import {
   hubV3Address,
   govIdIssuerAddress,
   phoneIssuerAddress,
+  biometricsIssuerAddress,
   v3KYCSybilResistanceCircuitId,
   v3PhoneSybilResistanceCircuitId,
   v3EPassportSybilResistanceCircuitId,
+  v3BiometricsSybilResistanceCircuitId,
   ePassportIssuerMerkleRoot,
 } from "../constants/misc.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
@@ -43,7 +45,7 @@ function parseV3SbtParams(req) {
   return {
     address,
     actionId,
-  }
+  };
 }
 
 export async function getHasValidKycSbt(req, res) {
@@ -55,13 +57,17 @@ export async function getHasValidKycSbt(req, res) {
     // Check blocklist first
     const blockListResult = await blocklistGetAddress(address);
     if (blockListResult.Item) {
-      return res.status(200).json({ 
-        hasValidSbt: false, 
-        message: "Address is on blocklist" 
+      return res.status(200).json({
+        hasValidSbt: false,
+        message: "Address is on blocklist",
       });
     }
 
-    const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, providers.optimism);
+    const hubV3Contract = new ethers.Contract(
+      hubV3Address,
+      HubV3ABI,
+      providers.optimism
+    );
 
     // Check v3 contract for KYC SBT
     try {
@@ -73,28 +79,87 @@ export async function getHasValidKycSbt(req, res) {
 
       const actionIdIsValid = actionId == actionIdInSBT;
       const issuerIsValid = govIdIssuerAddress == issuerAddress;
-      const isExpired = new Date(sbt[0].toNumber()) < (Date.now() / 1000);
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
       const isRevoked = sbt[2];
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         hasValidSbt: actionIdIsValid && issuerIsValid && !isRevoked && !isExpired,
       });
-      
     } catch (err) {
       // Do nothing
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
-        return res.status(200).json({ 
-          hasValidSbt: false, 
-          message: "SBT is expired or does not exist" 
+        return res.status(200).json({
+          hasValidSbt: false,
+          message: "SBT is expired or does not exist",
         });
       }
 
-      throw err
+      throw err;
     }
   } catch (err) {
     console.log(err);
     logWithTimestamp(
       "getHasValidKycSbt: Encountered error while calling smart contract. Exiting"
+    );
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
+export async function getHasValidBiometricsSbt(req, res) {
+  try {
+    const result = parseV3SbtParams(req);
+    if (result.error) return res.status(400).json({ error: result.error });
+    const { address, actionId } = result;
+
+    // Check blocklist first
+    const blockListResult = await blocklistGetAddress(address);
+    if (blockListResult.Item) {
+      return res.status(200).json({
+        hasValidSbt: false,
+        message: "Address is on blocklist",
+      });
+    }
+
+    const hubV3Contract = new ethers.Contract(
+      hubV3Address,
+      HubV3ABI,
+      providers.optimism
+    );
+
+    // Check v3 contract for Biometrics SBT
+    try {
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3BiometricsSybilResistanceCircuitId
+      );
+
+      const publicValues = sbt[1];
+      const actionIdInSBT = publicValues[2].toString();
+      const issuerAddress = publicValues[4].toHexString();
+
+      const actionIdIsValid = actionId == actionIdInSBT;
+      const issuerIsValid = biometricsIssuerAddress == issuerAddress;
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
+      const isRevoked = sbt[2];
+
+      return res.status(200).json({
+        hasValidSbt: actionIdIsValid && issuerIsValid && !isRevoked && !isExpired,
+      });
+    } catch (err) {
+      // Do nothing
+      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
+        return res.status(200).json({
+          hasValidSbt: false,
+          message: "SBT is expired or does not exist",
+        });
+      }
+
+      throw err;
+    }
+  } catch (err) {
+    console.log(err);
+    logWithTimestamp(
+      "getHasValidBiometricsSbt: Encountered error while calling smart contract. Exiting"
     );
     return res.status(500).json({ error: "An unexpected error occured" });
   }
@@ -109,31 +174,39 @@ export async function getHasValidEPassportSbt(req, res) {
     // Check blocklist first
     const blockListResult = await blocklistGetAddress(address);
     if (blockListResult.Item) {
-      return res.status(200).json({ 
-        hasValidSbt: false, 
-        message: "Address is on blocklist" 
+      return res.status(200).json({
+        hasValidSbt: false,
+        message: "Address is on blocklist",
       });
     }
 
-    const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, providers.optimism);
+    const hubV3Contract = new ethers.Contract(
+      hubV3Address,
+      HubV3ABI,
+      providers.optimism
+    );
 
     // Check v3 contract for ePassport SBT
     try {
-      const sbt = await hubV3Contract.getSBT(address, v3EPassportSybilResistanceCircuitId);
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3EPassportSybilResistanceCircuitId
+      );
 
       const publicValues = sbt[1];
       const merkleRoot = publicValues[2].toHexString();
-      const isExpired = new Date(sbt[0].toNumber()) < (Date.now() / 1000);
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
       const isRevoked = sbt[2];
 
       return res.status(200).json({
-        hasValidSbt: (merkleRoot === ePassportIssuerMerkleRoot) && !isRevoked && !isExpired,
+        hasValidSbt:
+          merkleRoot === ePassportIssuerMerkleRoot && !isRevoked && !isExpired,
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
-        return res.status(200).json({ 
-          hasValidSbt: false, 
-          message: "SBT is expired or does not exist"
+        return res.status(200).json({
+          hasValidSbt: false,
+          message: "SBT is expired or does not exist",
         });
       }
 
@@ -146,7 +219,6 @@ export async function getHasValidEPassportSbt(req, res) {
     );
     return res.status(500).json({ error: "An unexpected error occured" });
   }
-
 }
 
 export async function getHasPhoneSbt(req, res) {
@@ -158,9 +230,9 @@ export async function getHasPhoneSbt(req, res) {
     // Check blocklist first
     const blockListResult = await blocklistGetAddress(address);
     if (blockListResult.Item) {
-      return res.status(200).json({ 
-        hasValidSbt: false, 
-        message: "Address is on blocklist" 
+      return res.status(200).json({
+        hasValidSbt: false,
+        message: "Address is on blocklist",
       });
     }
 
@@ -178,7 +250,7 @@ export async function getHasPhoneSbt(req, res) {
 
       const actionIdIsValid = actionId == actionIdInSBT;
       const issuerIsValid = phoneIssuerAddress == issuerAddress;
-      const isExpired = new Date(sbt[0].toNumber()) < (Date.now() / 1000);
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
       const isRevoked = sbt[2];
 
       return res.status(200).json({
@@ -186,9 +258,9 @@ export async function getHasPhoneSbt(req, res) {
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
-        return res.status(200).json({ 
-          hasValidSbt: false, 
-          message: "SBT is expired or does not exist"
+        return res.status(200).json({
+          hasValidSbt: false,
+          message: "SBT is expired or does not exist",
         });
       }
 

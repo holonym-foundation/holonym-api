@@ -13,9 +13,11 @@ import {
   hubV3TestnetAddress,
   govIdIssuerAddress,
   phoneIssuerAddress,
+  biometricsIssuerAddress,
   v3KYCSybilResistanceCircuitId,
   v3PhoneSybilResistanceCircuitId,
   v3EPassportSybilResistanceCircuitId,
+  v3BiometricsSybilResistanceCircuitId,
   ePassportIssuerMerkleRoot,
 } from "../constants/misc.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
@@ -178,6 +180,41 @@ async function sybilResistancePhoneNear(req, res) {
   }
 }
 
+async function sybilResistanceBiometricsNear(req, res) {
+  const user = req.query.user;
+  const actionId = req.query["action-id"];
+
+  // Check for KYC SBT
+  try {
+    const sbt = await viewHubV3Sbt(
+      user,
+      new Array(...ethers.utils.arrayify(v3BiometricsSybilResistanceCircuitId))
+    );
+
+    const expiry = sbt.expiry;
+    const publicValues = sbt.public_values;
+
+    const actionIdInSBT = BigInt(ethers.utils.hexlify(publicValues[2])).toString();
+    const issuerAddress =
+      "0x" + BigInt(ethers.utils.hexlify(publicValues[4])).toString(16);
+
+    const expired = expiry < Date.now() / 1000;
+    const actionIdIsValid = actionId == actionIdInSBT;
+    const issuerIsValid = biometricsIssuerAddress == issuerAddress;
+
+    return res.status(200).json({
+      result: !expired && actionIdIsValid && issuerIsValid,
+    });
+  } catch (err) {
+    if ((err?.message ?? "").includes("SBT does not exist")) {
+      return res.status(200).json({ result: false });
+    }
+
+    console.log(err);
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
 async function sybilResistanceGovIdStellar(req, res) {
   const address = req.query.user;
   const actionId = req.query["action-id"];
@@ -191,7 +228,7 @@ async function sybilResistanceGovIdStellar(req, res) {
 
   const ePassportSbtResult = await getStellarSBTByAddress(
     address,
-    v3KYCSybilResistanceCircuitId
+    v3EPassportSybilResistanceCircuitId
   );
 
   if (kycSbtResult?.sbt || ePassportSbtResult?.sbt) {
@@ -227,7 +264,40 @@ async function sybilResistancePhoneStellar(req, res) {
   } else if (status === "expired") {
     return res
       .status(200)
-      .json({ status: false, details: `KYC SBT for address ${address} has expired` });
+      .json({ result: false, details: `KYC SBT for address ${address} has expired` });
+  } else if (sbt) {
+    const sbtActionId = (sbt.public_values?.[2] ?? 0).toString();
+    if (sbtActionId == actionId) {
+      return res.status(200).json({ result: true });
+    }
+    return res.status(200).json({
+      result: false,
+      details: `actionId in SBT is ${sbtActionId}. Expected ${actionId}`,
+    });
+  }
+}
+
+async function sybilResistanceBiometricsStellar(req, res) {
+  const address = req.query.user;
+  const actionId = req.query["action-id"];
+
+  // TODO: Validate address
+
+  const { sbt, status } = await getStellarSBTByAddress(
+    address,
+    v3BiometricsSybilResistanceCircuitId
+  );
+
+  if (status === "none") {
+    return res.status(200).json({
+      result: false,
+      details: `No Biometrics SBT found for address ${address}`,
+    });
+  } else if (status === "expired") {
+    return res.status(200).json({
+      result: false,
+      details: `Biometrics SBT for address ${address} has expired`,
+    });
   } else if (sbt) {
     const sbtActionId = (sbt.public_values?.[2] ?? 0).toString();
     if (sbtActionId == actionId) {
@@ -485,4 +555,94 @@ async function sybilResistancePhone(req, res) {
   }
 }
 
-export { sybilResistanceGovId, sybilResistanceEPassport, sybilResistancePhone };
+async function sybilResistanceBiometrics(req, res) {
+  try {
+    if (req.params.network === "near") {
+      return await sybilResistanceBiometricsNear(req, res);
+    } else if (req.params.network === "stellar") {
+      return await sybilResistanceBiometricsStellar(req, res);
+    }
+
+    const address = req.query.user;
+    const actionId = req.query["action-id"];
+    if (!address) {
+      return res
+        .status(400)
+        .json({ error: "Request query params do not include user address" });
+    }
+    if (!actionId) {
+      return res
+        .status(400)
+        .json({ error: "Request query params do not include action-id" });
+    }
+    if (!assertValidAddress(address)) {
+      return res.status(400).json({ error: "Invalid user address" });
+    }
+    if (!parseInt(actionId)) {
+      return res.status(400).json({ error: "Invalid action-id" });
+    }
+
+    // Check blocklist first
+    const blockListResult = await blocklistGetAddress(address);
+    if (blockListResult.Item) {
+      return res.status(200).json({ result: false });
+    }
+
+    const network = req.params.network;
+
+    const provider = providers[network];
+
+    // Check v1/v2 contract
+    const v1ContractAddr = sybilResistanceAddrsByNetwork[network];
+    const v1Contract = new ethers.Contract(
+      v1ContractAddr,
+      AntiSybilStoreABI,
+      provider
+    );
+    const isUnique = await v1Contract.isUniqueForAction(address, actionId);
+
+    if (isUnique || network !== "optimism") {
+      return res.status(200).json({ result: isUnique });
+    }
+
+    const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
+
+    // Check v3 contract for Biometrics SBT
+    try {
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3BiometricsSybilResistanceCircuitId
+      );
+
+      const publicValues = sbt[1];
+      const actionIdInSBT = publicValues[2].toString();
+      const issuerAddress = publicValues[4].toHexString();
+
+      const actionIdIsValid = actionId == actionIdInSBT;
+      const issuerIsValid = biometricsIssuerAddress == issuerAddress;
+
+      if (actionIdIsValid && issuerIsValid) {
+        return res.status(200).json({ result: true });
+      }
+    } catch (err) {
+      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+        return res.status(200).json({ result: false });
+      }
+
+      throw err;
+    }
+  } catch (err) {
+    console.log(err);
+    logWithTimestamp(
+      "sybilResistanceBiometrics: Encountered error while calling smart contract. Exiting"
+    );
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
+export {
+  sybilResistanceGovId,
+  sybilResistanceEPassport,
+  sybilResistancePhone,
+  sybilResistanceBiometrics,
+};

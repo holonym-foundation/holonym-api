@@ -8,10 +8,12 @@ import {
   hubV3Address,
   govIdIssuerAddress,
   phoneIssuerAddress,
+  biometricsIssuerAddress,
   v3KYCSybilResistanceCircuitId,
   v3PhoneSybilResistanceCircuitId,
   v3EPassportSybilResistanceCircuitId,
   v3CleanHandsCircuitId,
+  v3BiometricsSybilResistanceCircuitId,
   ePassportIssuerMerkleRoot,
   zeronymCleanHandsEthSignSchemaId,
   zeronymRelayerAddress,
@@ -56,7 +58,7 @@ function parseV3SbtParams(req) {
   return {
     address,
     actionId,
-  }
+  };
 }
 
 export async function sybilResistanceGovIdSBT(req, res) {
@@ -85,7 +87,7 @@ export async function sybilResistanceGovIdSBT(req, res) {
 
       const actionIdIsValid = actionId == actionIdInSBT;
       const issuerIsValid = govIdIssuerAddress == issuerAddress;
-      const isExpired = new Date(sbt[0].toNumber()) < (Date.now() / 1000);
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
       const isRevoked = sbt[2];
 
       const isUnique = issuerIsValid && actionIdIsValid && !isRevoked && !isExpired;
@@ -95,7 +97,7 @@ export async function sybilResistanceGovIdSBT(req, res) {
         return res.status(200).json({
           isUnique,
           signature,
-          circuitId: v3KYCSybilResistanceCircuitId
+          circuitId: v3KYCSybilResistanceCircuitId,
         });
       }
 
@@ -130,32 +132,40 @@ export async function sybilResistanceEPassportSBT(req, res) {
 
     // Check v3 contract for ePassport SBT
     try {
-      const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, providers.optimism);
+      const hubV3Contract = new ethers.Contract(
+        hubV3Address,
+        HubV3ABI,
+        providers.optimism
+      );
 
-      const sbt = await hubV3Contract.getSBT(address, v3EPassportSybilResistanceCircuitId);
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3EPassportSybilResistanceCircuitId
+      );
 
       const publicValues = sbt[1];
       const merkleRoot = publicValues[2].toHexString();
-      const isExpired = new Date(sbt[0].toNumber()) < (Date.now() / 1000);
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
       const isRevoked = sbt[2];
 
-      const isUnique = (merkleRoot === ePassportIssuerMerkleRoot) && !isRevoked && !isExpired;
+      const isUnique =
+        merkleRoot === ePassportIssuerMerkleRoot && !isRevoked && !isExpired;
 
       if (isUnique) {
         const signature = sign(v3EPassportSybilResistanceCircuitId, actionId, address);
-        return res.status(200).json({ 
-          isUnique, 
+        return res.status(200).json({
+          isUnique,
           signature,
-          circuitId: v3EPassportSybilResistanceCircuitId
+          circuitId: v3EPassportSybilResistanceCircuitId,
         });
       }
 
       return res.status(200).json({ isUnique });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
-        return res.status(200).json({ 
-          hasValidSbt: false, 
-          message: "SBT is expired or does not exist"
+        return res.status(200).json({
+          hasValidSbt: false,
+          message: "SBT is expired or does not exist",
         });
       }
 
@@ -193,17 +203,17 @@ export async function sybilResistancePhoneSBT(req, res) {
 
       const actionIdIsValid = actionId == actionIdInSBT;
       const issuerIsValid = phoneIssuerAddress == issuerAddress;
-      const isExpired = new Date(sbt[0].toNumber()) < (Date.now() / 1000);
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
       const isRevoked = sbt[2];
 
       const isUnique = issuerIsValid && actionIdIsValid && !isRevoked && !isExpired;
 
       if (isUnique) {
         const signature = sign(v3PhoneSybilResistanceCircuitId, actionId, address);
-        return res.status(200).json({ 
-          isUnique, 
-          signature, 
-          circuitId: v3PhoneSybilResistanceCircuitId 
+        return res.status(200).json({
+          isUnique,
+          signature,
+          circuitId: v3PhoneSybilResistanceCircuitId,
         });
       }
 
@@ -221,9 +231,75 @@ export async function sybilResistancePhoneSBT(req, res) {
   }
 }
 
+export async function sybilResistanceBiometricsSBT(req, res) {
+  try {
+    const result = parseV3SbtParams(req);
+    if (result.error) return res.status(400).json({ error: result.error });
+    const { address, actionId } = result;
+
+    // Check blocklist first
+    const blockListResult = await blocklistGetAddress(address);
+    if (blockListResult.Item) {
+      return res.status(200).json({ isUnique: false });
+    }
+
+    const provider = providers.optimism;
+
+    // Check v3 contract
+    try {
+      const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
+
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3BiometricsSybilResistanceCircuitId
+      );
+
+      const publicValues = sbt[1];
+      const actionIdInSBT = publicValues[2].toString();
+      const issuerAddress = publicValues[4].toHexString();
+
+      const actionIdIsValid = actionId == actionIdInSBT;
+      const issuerIsValid = biometricsIssuerAddress == issuerAddress;
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
+      const isRevoked = sbt[2];
+
+      const isUnique = issuerIsValid && actionIdIsValid && !isRevoked && !isExpired;
+
+      if (isUnique) {
+        const signature = sign(
+          v3BiometricsSybilResistanceCircuitId,
+          actionId,
+          address
+        );
+        return res.status(200).json({
+          isUnique,
+          signature,
+          circuitId: v3BiometricsSybilResistanceCircuitId,
+        });
+      }
+
+      return res.status(200).json({ isUnique });
+    } catch (err) {
+      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+        return res.status(200).json({ isUnique: false });
+      }
+
+      throw err;
+    }
+  } catch (err) {
+    console.log(err);
+    logWithTimestamp(
+      "sybilResistanceBiometrics: Encountered error while calling smart contract. Exiting"
+    );
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
 function scanSpAttestations(address, page) {
-  const queryParams = page ? `?page=${page}` : '';
-  return axios.get(`https://mainnet-rpc.sign.global/api/scan/addresses/${address}/attestations${queryParams}`)
+  const queryParams = page ? `?page=${page}` : "";
+  return axios.get(
+    `https://mainnet-rpc.sign.global/api/scan/addresses/${address}/attestations${queryParams}`
+  );
 }
 
 export async function cleanHandsAttestation(req, res) {
@@ -239,13 +315,13 @@ export async function cleanHandsAttestation(req, res) {
     }
 
     // TODO: Remove this block once we finish testing
-    const whitelist = ['0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266']
+    const whitelist = ["0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"];
     if (whitelist.includes(address.toLowerCase())) {
       const signature = sign(v3CleanHandsCircuitId, actionId, address);
-      return res.status(200).json({ 
-        isUnique: true, 
+      return res.status(200).json({
+        isUnique: true,
         signature,
-        circuitId: v3CleanHandsCircuitId
+        circuitId: v3CleanHandsCircuitId,
       });
     }
     // END TODO
@@ -259,38 +335,40 @@ export async function cleanHandsAttestation(req, res) {
         try {
           resp = await scanSpAttestations(address);
         } catch (err) {
-          console.log('err', err.response.status, err.response.data)
+          console.log("err", err.response.status, err.response.data);
           // If 404, user has no attestations
           if (err.response.status == 404) {
             return res.status(200).json({ isUnique: false });
           }
         }
-        
+
         // total == total attestations; page == current page; size == num attestations per page
-        hasMorePages = resp.data.data.total > resp.data.data.page * resp.data.data.size;
+        hasMorePages =
+          resp.data.data.total > resp.data.data.page * resp.data.data.size;
 
         // Filter for attestations with the correct schemaId
-        cleanHandsAttestations = resp.data.data.rows.filter((att) => (
-          att.fullSchemaId == zeronymCleanHandsEthSignSchemaId &&
-          att.attester == zeronymRelayerAddress &&
-          att.isReceiver == true && 
-          !att.revoked &&
-          att.validUntil > (new Date().getTime() / 1000)
-        ))
+        cleanHandsAttestations = resp.data.data.rows.filter(
+          (att) =>
+            att.fullSchemaId == zeronymCleanHandsEthSignSchemaId &&
+            att.attester == zeronymRelayerAddress &&
+            att.isReceiver == true &&
+            !att.revoked &&
+            att.validUntil > new Date().getTime() / 1000
+        );
 
         if (cleanHandsAttestations.length > 0 || !hasMorePages) {
           break;
         }
 
-        resp = await scanSpAttestations(address, resp.data.data.page + 1);        
+        resp = await scanSpAttestations(address, resp.data.data.page + 1);
       }
-      
+
       if (cleanHandsAttestations.length == 0) {
         return res.status(200).json({ isUnique: false });
       }
 
       // Call the smart contract directly to be 100% sure the user has the attestation
-      const signProtocolOpAddr = '0x945C44803E92a3495C32be951052a62E45A5D964'
+      const signProtocolOpAddr = "0x945C44803E92a3495C32be951052a62E45A5D964";
       const contract = new ethers.Contract(
         signProtocolOpAddr,
         SignProtocolABI,
@@ -302,18 +380,20 @@ export async function cleanHandsAttestation(req, res) {
       // If it's valid, sign and return
 
       // Sign Protocol attestation recipients are encoded as bytes32, so we need to decode
-      const decodedRecipient = new TextDecoder().decode(
-        ethers.utils.arrayify(attestation.recipients[0])
-      ).replaceAll('\x00', '').trim().replace('*', '');
+      const decodedRecipient = new TextDecoder()
+        .decode(ethers.utils.arrayify(attestation.recipients[0]))
+        .replaceAll("\x00", "")
+        .trim()
+        .replace("*", "");
       if (decodedRecipient.toLowerCase() != address.toLowerCase()) {
         return res.status(200).json({ isUnique: false });
       }
 
       const signature = sign(v3CleanHandsCircuitId, actionId, address);
-      return res.status(200).json({ 
-        isUnique: true, 
+      return res.status(200).json({
+        isUnique: true,
         signature,
-        circuitId: v3CleanHandsCircuitId
+        circuitId: v3CleanHandsCircuitId,
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
