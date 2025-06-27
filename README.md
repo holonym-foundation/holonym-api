@@ -15,10 +15,12 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/sybil-resistance/gov-id/<network>`
 - **GET** `/sybil-resistance/epassport/<network>`
 - **GET** `/sybil-resistance/phone/<network>`
+- **GET** `/sybil-resistance/biometrics/<network>`
 - **GET** `/residence/country/us/<network>`
 - **GET** `/snapshot-strategies/residence/country/us`
 - **GET** `/snapshot-strategies/sybil-resistance/gov-id`
 - **GET** `/snapshot-strategies/sybil-resistance/phone`
+- **GET** `/snapshot-strategies/sybil-resistance/biometrics`
 - **GET** `/attestation/attestor`
 - **GET** `/attestation/sbts/gov-id`
 
@@ -28,10 +30,10 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
 - Parameters
 
-  | name              | description                    | type   | in    | required |
-  | ----------------- | ------------------------------ | ------ | ----- | -------- |
-  | `credential-type` | 'kyc', 'epassport', or 'phone' | string | path  | true     |
-  | `address`         | User's blockchain address      | string | query | true     |
+  | name              | description                                  | type   | in    | required |
+  | ----------------- | -------------------------------------------- | ------ | ----- | -------- |
+  | `credential-type` | 'kyc', 'epassport', 'phone', or 'biometrics' | string | path  | true     |
+  | `address`         | User's blockchain address                    | string | query | true     |
 
 - Example
 
@@ -73,12 +75,12 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 
 - Parameters
 
-  | name              | description                       | type   | in    | required |
-  | ----------------- | --------------------------------- | ------ | ----- | -------- |
-  | `credential-type` | 'gov-id', 'epassport', or 'phone' | string | path  | true     |
-  | `network`         | 'optimism' or 'base-sepolia'      | string | path  | true     |
-  | `user`            | User's blockchain address         | string | query | true     |
-  | `action-id`       | Action ID                         | string | query | true     |
+  | name              | description                                     | type   | in    | required |
+  | ----------------- | ----------------------------------------------- | ------ | ----- | -------- |
+  | `credential-type` | 'gov-id', 'epassport', 'phone', or 'biometrics' | string | path  | true     |
+  | `network`         | 'optimism' or 'base-sepolia'                    | string | path  | true     |
+  | `user`            | User's blockchain address                       | string | query | true     |
+  | `action-id`       | Action ID                                       | string | query | true     |
 
 - Example
 
