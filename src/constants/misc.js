@@ -14,10 +14,12 @@ export const phoneIssuerAddress =
 //   process.env.NODE_ENV === "production"
 //     ? "0x40b8810cbaed9647b54d18cc98b720e1e8876be5d8e7089d3c079fc61c30a4"
 //     : "0x2998cab3d07a64315f1e8399ecef60a19f478231663f8740703bd30a42a91ed4";
+// export const biometricsIssuerAddress =
+//   process.env.NODE_ENV === "production"
+//     ? "0x39d18b4a7826440e58e05c67204913eb3b348e0cfc84ed3aec669da8a3105ea4"
+//     : "0xd486eec6abaee92f402247f0f645d533a8aebe48b713d847fa9e3df29f792438";
 export const biometricsIssuerAddress =
-  process.env.NODE_ENV === "production"
-    ? "0x39d18b4a7826440e58e05c67204913eb3b348e0cfc84ed3aec669da8a3105ea4"
-    : "0xd486eec6abaee92f402247f0f645d533a8aebe48b713d847fa9e3df29f792438";
+  "0x0d4f849df782fb9e68d525fbda10b73e59180e59cb2a21ce5d70ccc45dbfd922";
 
 export const v3KYCSybilResistanceCircuitId =
   "0x729d660e1c02e4e419745e617d643f897a538673ccf1051e093bbfa58b0a120b";
