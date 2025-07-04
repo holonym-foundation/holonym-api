@@ -302,8 +302,9 @@ async function sybilResistanceBiometrics(req, res) {
   const addresses = req.query.addresses.split(",");
   for (const address of addresses) {
     try {
+      // not relevant for biometrics
       // Check v1/v2 contract
-      const isUniqueV1 = await contract.isUniqueForAction(address, actionId); //, overrides);
+      // const isUniqueV1 = await contract.isUniqueForAction(address, actionId); //, overrides);
 
       // Check v3 contract
       let isUniqueV3 = false;
@@ -329,7 +330,7 @@ async function sybilResistanceBiometrics(req, res) {
         }
       }
 
-      const isUnique = isUniqueV1 || isUniqueV3;
+      const isUnique = isUniqueV3;
 
       scores.push({ address: address, score: isUnique ? 1 : 0 });
     } catch (err) {
