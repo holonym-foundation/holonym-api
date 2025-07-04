@@ -592,18 +592,19 @@ async function sybilResistanceBiometrics(req, res) {
 
     const provider = providers[network];
 
+    // not relevant for biometrics
     // Check v1/v2 contract
-    const v1ContractAddr = sybilResistanceAddrsByNetwork[network];
-    const v1Contract = new ethers.Contract(
-      v1ContractAddr,
-      AntiSybilStoreABI,
-      provider
-    );
-    const isUnique = await v1Contract.isUniqueForAction(address, actionId);
+    // const v1ContractAddr = sybilResistanceAddrsByNetwork[network];
+    // const v1Contract = new ethers.Contract(
+    //   v1ContractAddr,
+    //   AntiSybilStoreABI,
+    //   provider
+    // );
+    // const isUnique = await v1Contract.isUniqueForAction(address, actionId);
 
-    if (isUnique || network !== "optimism") {
-      return res.status(200).json({ result: isUnique });
-    }
+    // if (isUnique || network !== "optimism") {
+    //   return res.status(200).json({ result: isUnique });
+    // }
 
     const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
 
