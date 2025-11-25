@@ -84,6 +84,7 @@ export async function getHasValidKycSbt(req, res) {
 
       return res.status(200).json({
         hasValidSbt: actionIdIsValid && issuerIsValid && !isRevoked && !isExpired,
+        expirationDate: sbt[0].toNumber(),
       });
     } catch (err) {
       // Do nothing
@@ -144,6 +145,7 @@ export async function getHasValidBiometricsSbt(req, res) {
 
       return res.status(200).json({
         hasValidSbt: actionIdIsValid && issuerIsValid && !isRevoked && !isExpired,
+        expirationDate: sbt[0].toNumber(),
       });
     } catch (err) {
       // Do nothing
@@ -201,6 +203,7 @@ export async function getHasValidEPassportSbt(req, res) {
       return res.status(200).json({
         hasValidSbt:
           merkleRoot === ePassportIssuerMerkleRoot && !isRevoked && !isExpired,
+        expirationDate: sbt[0].toNumber(),
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
@@ -255,6 +258,7 @@ export async function getHasPhoneSbt(req, res) {
 
       return res.status(200).json({
         hasValidSbt: issuerIsValid && actionIdIsValid && !isRevoked && !isExpired,
+        expirationDate: sbt[0].toNumber(),
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {

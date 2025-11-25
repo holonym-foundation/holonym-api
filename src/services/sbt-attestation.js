@@ -98,6 +98,7 @@ export async function sybilResistanceGovIdSBT(req, res) {
           isUnique,
           signature,
           circuitId: v3KYCSybilResistanceCircuitId,
+          expirationDate: sbt[0].toNumber(),
         });
       }
 
@@ -157,6 +158,7 @@ export async function sybilResistanceEPassportSBT(req, res) {
           isUnique,
           signature,
           circuitId: v3EPassportSybilResistanceCircuitId,
+          expirationDate: sbt[0].toNumber(),
         });
       }
 
@@ -214,6 +216,7 @@ export async function sybilResistancePhoneSBT(req, res) {
           isUnique,
           signature,
           circuitId: v3PhoneSybilResistanceCircuitId,
+          expirationDate: sbt[0].toNumber(),
         });
       }
 
@@ -275,6 +278,7 @@ export async function sybilResistanceBiometricsSBT(req, res) {
           isUnique,
           signature,
           circuitId: v3BiometricsSybilResistanceCircuitId,
+          expirationDate: sbt[0].toNumber(),
         });
       }
 

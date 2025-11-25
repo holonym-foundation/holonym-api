@@ -49,6 +49,7 @@ We plan to support more chains in the future. If you would like to use Holonym o
     ```JSON
     {
         "hasValidSbt": true,
+        "expirationDate": 1735689600
     }
     ```
 
@@ -96,6 +97,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
     ```JSON
     {
         "result": true,
+        "expirationDate": 1735689600
     }
     ```
 
@@ -370,7 +372,9 @@ Returns `isUnique`, a boolean indicating whether the user is unique for the give
     ```JSON
     {
       "isUnique" : true,
-      "signature": "0x123..."
+      "signature": "0x123...",
+      "circuitId": "0x...",
+      "expirationDate": 1735689600
     }
     ```
 

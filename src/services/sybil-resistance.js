@@ -380,7 +380,10 @@ async function sybilResistanceGovId(req, res) {
       const issuerIsValid = govIdIssuerAddress == issuerAddress;
 
       if (actionIdIsValid && issuerIsValid) {
-        return res.status(200).json({ result: true });
+        return res.status(200).json({
+          result: true,
+          expirationDate: sbt[0].toNumber(),
+        });
       }
     } catch (err) {
       // Do nothing
@@ -398,6 +401,7 @@ async function sybilResistanceGovId(req, res) {
 
       return res.status(200).json({
         result: merkleRoot === ePassportIssuerMerkleRoot,
+        expirationDate: sbt[0].toNumber(),
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
@@ -460,6 +464,7 @@ async function sybilResistanceEPassport(req, res) {
 
       return res.status(200).json({
         result: merkleRoot === ePassportIssuerMerkleRoot,
+        expirationDate: sbt[0].toNumber(),
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
@@ -538,6 +543,7 @@ async function sybilResistancePhone(req, res) {
 
       return res.status(200).json({
         result: issuerIsValid && actionIdIsValid,
+        expirationDate: sbt[0].toNumber(),
       });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
@@ -623,7 +629,10 @@ async function sybilResistanceBiometrics(req, res) {
       const issuerIsValid = biometricsIssuerAddress == issuerAddress;
 
       if (actionIdIsValid && issuerIsValid) {
-        return res.status(200).json({ result: true });
+        return res.status(200).json({
+          result: true,
+          expirationDate: sbt[0].toNumber(),
+        });
       }
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
