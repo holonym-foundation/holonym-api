@@ -319,7 +319,10 @@ export async function cleanHandsAttestation(req, res) {
     }
 
     // TODO: Remove this block once we finish testing
-    const whitelist = ["0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"];
+    const whitelist = [
+      "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "0xea7d467e12b199e7d94ee7bda32335a0f9248315",
+    ];
     if (whitelist.includes(address.toLowerCase())) {
       const signature = sign(v3CleanHandsCircuitId, actionId, address);
       return res.status(200).json({
