@@ -22,8 +22,11 @@ import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import SignProtocolABI from "../constants/SignProtocolABI.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
 
-function sign(circuitId, actionId, address) {
-  const attestor = new ethers.utils.SigningKey(process.env.ATTESTOR_PRIVATE_KEY);
+function _sign(circuitId, actionId, address, sandbox) {
+  const privateKey = sandbox
+    ? process.env.SANDBOX_ATTESTOR_PRIVATE_KEY
+    : process.env.ATTESTOR_PRIVATE_KEY;
+  const attestor = new ethers.utils.SigningKey(privateKey);
 
   const digest = ethers.utils.solidityKeccak256(
     ["uint256", "uint256", "address"],
@@ -34,6 +37,14 @@ function sign(circuitId, actionId, address) {
     ["\x19Ethereum Signed Message:\n32", digest]
   );
   return ethers.utils.joinSignature(attestor.signDigest(personalSignPreimage));
+}
+
+function sign(circuitId, actionId, address) {
+  return _sign(circuitId, actionId, address, false);
+}
+
+function sandboxSign(circuitId, actionId, address) {
+  return _sign(circuitId, actionId, address, true);
 }
 
 /**
@@ -306,6 +317,14 @@ function scanSpAttestations(address, page) {
   );
 }
 
+function scanSpAttestationsTestnet(recipientAddress, page) {
+  const queryParams = page ? `&page=${page}` : "";
+  // Query testnet API with recipient filter
+  return axios.get(
+    `https://testnet-rpc.sign.global/api/index/attestations?recipient=${recipientAddress}${queryParams}`
+  );
+}
+
 export async function cleanHandsAttestation(req, res) {
   try {
     const result = parseV3SbtParams(req);
@@ -336,11 +355,13 @@ export async function cleanHandsAttestation(req, res) {
     try {
       let cleanHandsAttestations = [];
       let hasMorePages = true;
+      let currentPage = null;
+
       while (hasMorePages) {
         // Query EthSign scan API for user's address
         let resp = null;
         try {
-          resp = await scanSpAttestations(address);
+          resp = await scanSpAttestations(address, currentPage);
         } catch (err) {
           console.log("err", err.response.status, err.response.data);
           // If 404, user has no attestations
@@ -350,11 +371,11 @@ export async function cleanHandsAttestation(req, res) {
         }
 
         // total == total attestations; page == current page; size == num attestations per page
-        hasMorePages =
-          resp.data.data.total > resp.data.data.page * resp.data.data.size;
+        const data = resp.data.data;
+        hasMorePages = data.total > data.page * data.size;
 
         // Filter for attestations with the correct schemaId
-        cleanHandsAttestations = resp.data.data.rows.filter(
+        cleanHandsAttestations = data.rows.filter(
           (att) =>
             att.fullSchemaId == zeronymCleanHandsEthSignSchemaId &&
             att.attester == zeronymRelayerAddress &&
@@ -367,7 +388,7 @@ export async function cleanHandsAttestation(req, res) {
           break;
         }
 
-        resp = await scanSpAttestations(address, resp.data.data.page + 1);
+        currentPage = data.page + 1;
       }
 
       if (cleanHandsAttestations.length == 0) {
@@ -415,9 +436,114 @@ export async function cleanHandsAttestation(req, res) {
   }
 }
 
+export async function sandboxCleanHandsAttestation(req, res) {
+  try {
+    const result = parseV3SbtParams(req);
+    if (result.error) return res.status(400).json({ error: result.error });
+    const { address, actionId } = result;
+
+    // Check blocklist first
+    const blockListResult = await blocklistGetAddress(address);
+    if (blockListResult.Item) {
+      return res.status(200).json({ isUnique: false });
+    }
+
+    // TODO: Remove this block once we finish testing
+    const whitelist = [
+      "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "0xea7d467e12b199e7d94ee7bda32335a0f9248315",
+    ];
+    if (whitelist.includes(address.toLowerCase())) {
+      const signature = sandboxSign(v3CleanHandsCircuitId, actionId, address);
+      return res.status(200).json({
+        isUnique: true,
+        signature,
+        circuitId: v3CleanHandsCircuitId,
+      });
+    }
+    // END TODO
+
+    try {
+      let cleanHandsAttestations = [];
+      let hasMorePages = true;
+      let currentPage = 1;
+
+      while (hasMorePages) {
+        // Query testnet Sign Protocol API for user's address
+        let resp = null;
+        try {
+          resp = await scanSpAttestationsTestnet(address, currentPage);
+        } catch (err) {
+          console.log("err", err.response?.status, err.response?.data);
+          // If 404 or no data, user has no attestations
+          if (err.response?.status == 404 || !err.response?.data?.data) {
+            return res.status(200).json({ isUnique: false });
+          }
+          throw err;
+        }
+
+        // Check if there are more pages
+        const data = resp.data.data;
+        hasMorePages = data.total > data.page * data.size;
+
+        // Filter for attestations with the correct schemaId
+        // Testnet API structure: schema.schemaId, recipients array, attester address
+        cleanHandsAttestations = data.rows.filter(
+          (att) => 
+            att.fullSchemaId == zeronymCleanHandsEthSignSchemaId &&
+            att.attester == zeronymRelayerAddress &&
+            att.isReceiver == true &&
+            !att.revoked &&
+            att.validUntil > new Date().getTime() / 1000
+        );
+
+        if (cleanHandsAttestations.length > 0 || !hasMorePages) {
+          break;
+        }
+
+        currentPage = data.page + 1;
+      }
+
+      if (cleanHandsAttestations.length == 0) {
+        return res.status(200).json({ isUnique: false });
+      }
+
+      // For sandbox, we trust the API response and don't need to verify on-chain
+      // since we're using testnet
+
+      const signature = sandboxSign(v3CleanHandsCircuitId, actionId, address);
+      return res.status(200).json({
+        isUnique: true,
+        signature,
+        circuitId: v3CleanHandsCircuitId,
+      });
+    } catch (err) {
+      console.log(err);
+      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+        return res.status(200).json({ isUnique: false });
+      }
+
+      throw err;
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
 export async function getAttestor(req, res) {
   try {
     const attestor = new ethers.Wallet(process.env.ATTESTOR_PRIVATE_KEY);
+    return res.status(200).json({ address: attestor.address });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
+export async function getSandboxAttestor(req, res) {
+  try {
+    const attestor = new ethers.Wallet(process.env.SANDBOX_ATTESTOR_PRIVATE_KEY);
     return res.status(200).json({ address: attestor.address });
   } catch (err) {
     console.log(err);

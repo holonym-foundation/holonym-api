@@ -5,7 +5,9 @@ import {
   sybilResistancePhoneSBT,
   sybilResistanceBiometricsSBT,
   cleanHandsAttestation,
+  sandboxCleanHandsAttestation,
   getAttestor,
+  getSandboxAttestor,
 } from "../services/sbt-attestation.js";
 
 const router = express.Router();
@@ -17,4 +19,8 @@ router.get("/sbts/biometrics/", sybilResistanceBiometricsSBT);
 router.get("/sbts/clean-hands", cleanHandsAttestation);
 router.get("/attestor", getAttestor);
 
-export default router;
+const sandboxRouter = express.Router();
+sandboxRouter.get("/sbts/clean-hands", sandboxCleanHandsAttestation);
+sandboxRouter.get("/attestor", getSandboxAttestor);
+
+export { router, sandboxRouter };

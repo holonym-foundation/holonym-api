@@ -23,6 +23,8 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/snapshot-strategies/sybil-resistance/biometrics`
 - **GET** `/attestation/attestor`
 - **GET** `/attestation/sbts/gov-id`
+- **GET** `/sandbox/attestations/sbts/clean-hands`
+- **GET** `/sandbox/attestations/attestor`
 
 ### **GET** `/sbts/<credential-type>?address=<user-address>`
 
@@ -333,12 +335,45 @@ To use with the ["api"](https://github.com/snapshot-labs/snapshot-strategies/tre
 
 ### **GET** `/attestation/attestor`
 
+Returns the address of the mainnet attestor that signs attestations.
+
 - Example
 
   ```JavaScript
   const resp = await fetch('https://api.holonym.io/attestation/attestor');
   const { address } = await resp.json();
   ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+      "address": "0x..."
+    }
+    ```
+
+### **GET** `/sandbox/attestations/attestor`
+
+Returns the address of the sandbox attestor that signs sandbox attestations.
+
+- Example
+
+  ```JavaScript
+  const resp = await fetch('https://api.holonym.io/sandbox/attestations/attestor');
+  const { address } = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+      "address": "0x..."
+    }
+    ```
 
 ### **GET** `/attestation/sbts/gov-id?action-id=<action-id>&user=<user-address>`
 
@@ -375,6 +410,60 @@ Returns `isUnique`, a boolean indicating whether the user is unique for the give
       "signature": "0x123...",
       "circuitId": "0x...",
       "expirationDate": 1735689600
+    }
+    ```
+
+  - 200
+
+    ```JSON
+    {
+      "isUnique" : false,
+    }
+    ```
+
+### **GET** `/sandbox/attestations/sbts/clean-hands?action-id=<action-id>&address=<user-address>`
+
+Returns `isUnique`, a boolean indicating whether the user has a valid clean hands attestation on the testnet Sign Protocol API, and (only if the user is unique) `signature`, the sandbox attestor's personal_sign signature of the concatenation of `action-id` and `user-address`.
+
+This endpoint is similar to the mainnet clean hands attestation endpoint, but queries the testnet Sign Protocol API (`https://testnet-rpc.sign.global/api/index/attestations`) and uses the sandbox attestor private key for signing.
+
+- Parameters
+
+  | name        | description                     | type   | in    | required |
+  | ----------- | ------------------------------- | ------ | ----- | -------- |
+  | `address`   | User's blockchain address        | string | query | true     |
+  | `action-id` | Action ID (defaults to 123456789) | string | query | false    |
+
+- Example
+
+  ```JavaScript
+  const actionId = 123456789
+  const userAddress = '0xdbd6b2c02338919EdAa192F5b60F5e5840A50079'
+  const resp = await fetch(`https://api.holonym.io/sandbox/attestations/sbts/clean-hands?action-id=${actionId}&address=${userAddress}`)
+  const { isUnique, signature, circuitId } = await resp.json();
+
+  // Verify using ethers v5
+  const digest = ethers.utils.solidityKeccak256(
+    ["uint256", "uint256", "address"],
+    [circuitId, actionId, userAddress]
+  );
+  const personalSignPreimage = ethers.utils.solidityKeccak256(
+    ["string", "bytes32"],
+    ["\x19Ethereum Signed Message:\n32", digest]
+  );
+  const recovered = ethers.utils.recoverAddress(personalSignPreimage, signature)
+  // Note: The recovered address will be the sandbox attestor address, not the mainnet one
+  ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+      "isUnique" : true,
+      "signature": "0x123...",
+      "circuitId": "0x..."
     }
     ```
 

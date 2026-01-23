@@ -5,7 +5,7 @@ import residence from "./routes/residence.js";
 import sybilResistance from "./routes/sybil-resistance.js";
 import snapshotStrategies from "./routes/snapshot-strategies.js";
 import metrics from "./routes/metrics.js";
-import sbtAttestation from "./routes/sbt-attestation.js";
+import { router as sbtAttestation, sandboxRouter as sandboxSbtAttestation } from "./routes/sbt-attestation.js";
 import sbts from "./routes/sbts.js";
 import testnetMinter from "./routes/testnet-minter.js";
 
@@ -31,6 +31,9 @@ app.use("/metrics", metrics);
 app.use("/attestation", sbtAttestation);
 app.use("/sbts", sbts);
 app.use("/testnet-minter", testnetMinter);
+
+// Sandbox routes
+app.use("/sandbox/attestations", sandboxSbtAttestation);
 
 app.get("/", (req, res) => {
   console.log(`${new Date().toISOString()} GET /`);
