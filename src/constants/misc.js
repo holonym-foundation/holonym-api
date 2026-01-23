@@ -36,6 +36,7 @@ export const ePassportIssuerMerkleRoot =
   "0x111abc2c2de1738067395fa944c07ce6e44c4a38accfed392797bb94cee2cdac";
 
 export const zeronymCleanHandsEthSignSchemaId = "onchain_evm_10_0x8";
+export const zeronymCleanHandsEthSignSchemaIdTestnet = "onchain_evm_11155420_0xc41";
 
 export const zeronymRelayerAddress = "0xB1f50c6C34C72346b1229e5C80587D0D659556Fd";
 

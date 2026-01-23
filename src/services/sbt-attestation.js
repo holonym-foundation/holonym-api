@@ -17,6 +17,7 @@ import {
   ePassportIssuerMerkleRoot,
   zeronymCleanHandsEthSignSchemaId,
   zeronymRelayerAddress,
+  zeronymCleanHandsEthSignSchemaIdTestnet,
 } from "../constants/misc.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import SignProtocolABI from "../constants/SignProtocolABI.js";
@@ -318,10 +319,10 @@ function scanSpAttestations(address, page) {
 }
 
 function scanSpAttestationsTestnet(recipientAddress, page) {
-  const queryParams = page ? `&page=${page}` : "";
+  const queryParams = page ? `?page=${page}` : "";
   // Query testnet API with recipient filter
   return axios.get(
-    `https://testnet-rpc.sign.global/api/index/attestations?recipient=${recipientAddress}${queryParams}`
+    `https://testnet-rpc.sign.global/api/scan/addresses/${recipientAddress}/attestations${queryParams}`
   );
 }
 
@@ -490,7 +491,7 @@ export async function sandboxCleanHandsAttestation(req, res) {
         // Testnet API structure: schema.schemaId, recipients array, attester address
         cleanHandsAttestations = data.rows.filter(
           (att) => 
-            att.fullSchemaId == zeronymCleanHandsEthSignSchemaId &&
+            att.fullSchemaId == zeronymCleanHandsEthSignSchemaIdTestnet &&
             att.attester == zeronymRelayerAddress &&
             att.isReceiver == true &&
             !att.revoked &&

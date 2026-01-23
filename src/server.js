@@ -33,7 +33,7 @@ app.use("/sbts", sbts);
 app.use("/testnet-minter", testnetMinter);
 
 // Sandbox routes
-app.use("/sandbox/attestations", sandboxSbtAttestation);
+app.use("/sandbox/attestation", sandboxSbtAttestation);
 
 app.get("/", (req, res) => {
   console.log(`${new Date().toISOString()} GET /`);

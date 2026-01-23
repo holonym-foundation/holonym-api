@@ -23,8 +23,8 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/snapshot-strategies/sybil-resistance/biometrics`
 - **GET** `/attestation/attestor`
 - **GET** `/attestation/sbts/gov-id`
-- **GET** `/sandbox/attestations/sbts/clean-hands`
-- **GET** `/sandbox/attestations/attestor`
+- **GET** `/sandbox/attestation/sbts/clean-hands`
+- **GET** `/sandbox/attestation/attestor`
 
 ### **GET** `/sbts/<credential-type>?address=<user-address>`
 
@@ -354,14 +354,14 @@ Returns the address of the mainnet attestor that signs attestations.
     }
     ```
 
-### **GET** `/sandbox/attestations/attestor`
+### **GET** `/sandbox/attestation/attestor`
 
 Returns the address of the sandbox attestor that signs sandbox attestations.
 
 - Example
 
   ```JavaScript
-  const resp = await fetch('https://api.holonym.io/sandbox/attestations/attestor');
+  const resp = await fetch('https://api.holonym.io/sandbox/attestation/attestor');
   const { address } = await resp.json();
   ```
 
@@ -421,7 +421,7 @@ Returns `isUnique`, a boolean indicating whether the user is unique for the give
     }
     ```
 
-### **GET** `/sandbox/attestations/sbts/clean-hands?action-id=<action-id>&address=<user-address>`
+### **GET** `/sandbox/attestation/sbts/clean-hands?action-id=<action-id>&address=<user-address>`
 
 Returns `isUnique`, a boolean indicating whether the user has a valid clean hands attestation on the testnet Sign Protocol API, and (only if the user is unique) `signature`, the sandbox attestor's personal_sign signature of the concatenation of `action-id` and `user-address`.
 
@@ -439,7 +439,7 @@ This endpoint is similar to the mainnet clean hands attestation endpoint, but qu
   ```JavaScript
   const actionId = 123456789
   const userAddress = '0xdbd6b2c02338919EdAa192F5b60F5e5840A50079'
-  const resp = await fetch(`https://api.holonym.io/sandbox/attestations/sbts/clean-hands?action-id=${actionId}&address=${userAddress}`)
+  const resp = await fetch(`https://api.holonym.io/sandbox/attestation/sbts/clean-hands?action-id=${actionId}&address=${userAddress}`)
   const { isUnique, signature, circuitId } = await resp.json();
 
   // Verify using ethers v5
