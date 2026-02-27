@@ -31,6 +31,10 @@ export const v3CleanHandsCircuitId =
   "0x1c98fc4f7f1ad3805aefa81ad25fa466f8342292accf69566b43691d12742a19";
 export const v3BiometricsSybilResistanceCircuitId =
   "0x0b5121226395e3b6c76eb8ddfb0bf2f2075e7f2c6956567e84b38a223c3a3d15"; // even
+export const v3ZKPassportSybilResistanceCircuitId =
+  "0x14c3513390f8a03993c848621b1840d58c27fd50bbddba73265e22d17b0b747e";
+export const zkPassportIssuerAddress =
+  "0x231c6ff490cf3282131a301f0b7dad3dcdfa769d912e01941a80c92dd750df96";
 
 export const ePassportIssuerMerkleRoot =
   "0x111abc2c2de1738067395fa944c07ce6e44c4a38accfed392797bb94cee2cdac";

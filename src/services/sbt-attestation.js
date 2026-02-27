@@ -14,10 +14,12 @@ import {
   v3EPassportSybilResistanceCircuitId,
   v3CleanHandsCircuitId,
   v3BiometricsSybilResistanceCircuitId,
+  v3ZKPassportSybilResistanceCircuitId,
   ePassportIssuerMerkleRoot,
   zeronymCleanHandsEthSignSchemaId,
   zeronymRelayerAddress,
   zeronymCleanHandsEthSignSchemaIdTestnet,
+  zkPassportIssuerAddress,
 } from "../constants/misc.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import SignProtocolABI from "../constants/SignProtocolABI.js";
@@ -306,6 +308,71 @@ export async function sybilResistanceBiometricsSBT(req, res) {
     console.log(err);
     logWithTimestamp(
       "sybilResistanceBiometrics: Encountered error while calling smart contract. Exiting"
+    );
+    return res.status(500).json({ error: "An unexpected error occured" });
+  }
+}
+
+export async function sybilResistanceZkPassportSBT(req, res) {
+  try {
+    const result = parseV3SbtParams(req);
+    if (result.error) return res.status(400).json({ error: result.error });
+    const { address, actionId } = result;
+
+    // Check blocklist first
+    const blockListResult = await blocklistGetAddress(address);
+    if (blockListResult.Item) {
+      return res.status(200).json({ isUnique: false });
+    }
+
+    const provider = providers.optimism;
+
+    // Check v3 contract for ZK Passport SBT
+    try {
+      const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
+
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3ZKPassportSybilResistanceCircuitId
+      );
+
+      const publicValues = sbt[1];
+      const actionIdInSBT = publicValues[2].toString();
+      const issuerAddress = publicValues[4].toHexString();
+
+      const actionIdIsValid = actionId == actionIdInSBT;
+      const issuerIsValid = zkPassportIssuerAddress == issuerAddress;
+      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
+      const isRevoked = sbt[2];
+
+      const isUnique = issuerIsValid && actionIdIsValid && !isRevoked && !isExpired;
+
+      if (isUnique) {
+        const signature = sign(
+          v3ZKPassportSybilResistanceCircuitId,
+          actionId,
+          address
+        );
+        return res.status(200).json({
+          isUnique,
+          signature,
+          circuitId: v3ZKPassportSybilResistanceCircuitId,
+          expirationDate: sbt[0].toNumber(),
+        });
+      }
+
+      return res.status(200).json({ isUnique });
+    } catch (err) {
+      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+        return res.status(200).json({ isUnique: false });
+      }
+
+      throw err;
+    }
+  } catch (err) {
+    console.log(err);
+    logWithTimestamp(
+      "sybilResistanceZkPassportSBT: Encountered error while calling smart contract. Exiting"
     );
     return res.status(500).json({ error: "An unexpected error occured" });
   }

@@ -18,7 +18,9 @@ import {
   v3PhoneSybilResistanceCircuitId,
   v3EPassportSybilResistanceCircuitId,
   v3BiometricsSybilResistanceCircuitId,
+  v3ZKPassportSybilResistanceCircuitId,
   ePassportIssuerMerkleRoot,
+  zkPassportIssuerAddress,
 } from "../constants/misc.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
@@ -399,10 +401,38 @@ async function sybilResistanceGovId(req, res) {
       const publicValues = sbt[1];
       const merkleRoot = publicValues[2].toHexString();
 
-      return res.status(200).json({
-        result: merkleRoot === ePassportIssuerMerkleRoot,
-        expirationDate: sbt[0].toNumber(),
-      });
+      if (merkleRoot === ePassportIssuerMerkleRoot) {
+        return res.status(200).json({
+          result: true,
+          expirationDate: sbt[0].toNumber(),
+        });
+      }
+    } catch (err) {
+      if (!(err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
+        throw err;
+      }
+    }
+
+    // Check v3 contract for ZK Passport SBT
+    try {
+      const sbt = await hubV3Contract.getSBT(
+        address,
+        v3ZKPassportSybilResistanceCircuitId
+      );
+
+      const publicValues = sbt[1];
+      const actionIdInSBT = publicValues[2].toString();
+      const issuerAddress = publicValues[4].toHexString();
+
+      const actionIdIsValid = actionId == actionIdInSBT;
+      const issuerIsValid = zkPassportIssuerAddress == issuerAddress;
+
+      if (actionIdIsValid && issuerIsValid) {
+        return res.status(200).json({
+          result: true,
+          expirationDate: sbt[0].toNumber(),
+        });
+      }
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
         return res.status(200).json({ result: false });
@@ -410,6 +440,8 @@ async function sybilResistanceGovId(req, res) {
 
       throw err;
     }
+
+    return res.status(200).json({ result: false });
   } catch (err) {
     console.log(err);
     logWithTimestamp(
