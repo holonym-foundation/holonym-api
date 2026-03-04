@@ -13,7 +13,6 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
 - **GET** `/sbts/<credential-type>/`
 - **GET** `/sybil-resistance/gov-id/<network>`
-- **GET** `/sybil-resistance/epassport/<network>`
 - **GET** `/sybil-resistance/phone/<network>`
 - **GET** `/sybil-resistance/biometrics/<network>`
 - **GET** `/residence/country/us/<network>`
@@ -23,7 +22,6 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/snapshot-strategies/sybil-resistance/biometrics`
 - **GET** `/attestation/attestor`
 - **GET** `/attestation/sbts/gov-id`
-- **GET** `/attestation/sbts/e-passport`
 - **GET** `/attestation/sbts/zk-passport`
 - **GET** `/attestation/sbts/phone`
 - **GET** `/attestation/sbts/biometrics`
@@ -39,7 +37,7 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
   | name              | description                                  | type   | in    | required |
   | ----------------- | -------------------------------------------- | ------ | ----- | -------- |
-  | `credential-type` | 'kyc', 'epassport', 'zk-passport', 'phone', or 'biometrics' | string | path  | true     |
+  | `credential-type` | 'kyc', 'zk-passport', 'phone', or 'biometrics' | string | path  | true     |
   | `address`         | User's blockchain address                    | string | query | true     |
 
 - Example
@@ -85,7 +83,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 
   | name              | description                                     | type   | in    | required |
   | ----------------- | ----------------------------------------------- | ------ | ----- | -------- |
-  | `credential-type` | 'gov-id', 'epassport', 'phone', or 'biometrics' (gov-id also checks zk-passport as fallback) | string | path  | true     |
+  | `credential-type` | 'gov-id', 'phone', or 'biometrics' (gov-id also checks zk-passport as fallback) | string | path  | true     |
   | `network`         | 'optimism' or 'base-sepolia'                    | string | path  | true     |
   | `user`            | User's blockchain address                       | string | query | true     |
   | `action-id`       | Action ID                                       | string | query | true     |

@@ -25,8 +25,6 @@ export const v3KYCSybilResistanceCircuitId =
   "0x729d660e1c02e4e419745e617d643f897a538673ccf1051e093bbfa58b0a120b";
 export const v3PhoneSybilResistanceCircuitId =
   "0xbce052cf723dca06a21bd3cf838bc518931730fb3db7859fc9cc86f0d5483495";
-export const v3EPassportSybilResistanceCircuitId =
-  "0xf2ce248b529343e105f7b3c16459da619281c5f81cf716d28f7df9f87667364d";
 export const v3CleanHandsCircuitId =
   "0x1c98fc4f7f1ad3805aefa81ad25fa466f8342292accf69566b43691d12742a19";
 export const v3BiometricsSybilResistanceCircuitId =
@@ -35,9 +33,6 @@ export const v3ZKPassportSybilResistanceCircuitId =
   "0x14c3513390f8a03993c848621b1840d58c27fd50bbddba73265e22d17b0b747e";
 export const zkPassportIssuerAddress =
   "0x231c6ff490cf3282131a301f0b7dad3dcdfa769d912e01941a80c92dd750df96";
-
-export const ePassportIssuerMerkleRoot =
-  "0x111abc2c2de1738067395fa944c07ce6e44c4a38accfed392797bb94cee2cdac";
 
 export const zeronymCleanHandsEthSignSchemaId = "onchain_evm_10_0x8";
 export const zeronymCleanHandsEthSignSchemaIdTestnet = "onchain_evm_11155420_0xc41";

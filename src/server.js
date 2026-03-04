@@ -39,16 +39,13 @@ app.get("/", (req, res) => {
   console.log(`${new Date().toISOString()} GET /`);
   const routes = [
     "GET /sbts/kyc",
-    "GET /sbts/epassport",
     "GET /sbts/zk-passport",
     "GET /sbts/phone",
     "GET /sbts/biometrics",
     "GET /sybil-resistance/gov-id/:network",
-    "GET /sybil-resistance/epassport/:network",
     "GET /sybil-resistance/phone/:network",
     "GET /sybil-resistance/biometrics/:network",
     "GET /attestation/sbts/gov-id",
-    "GET /attestation/sbts/e-passport",
     "GET /attestation/sbts/zk-passport",
     "GET /attestation/sbts/phone",
     "GET /attestation/sbts/biometrics",

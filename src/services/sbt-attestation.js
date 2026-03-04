@@ -11,11 +11,9 @@ import {
   biometricsIssuerAddress,
   v3KYCSybilResistanceCircuitId,
   v3PhoneSybilResistanceCircuitId,
-  v3EPassportSybilResistanceCircuitId,
   v3CleanHandsCircuitId,
   v3BiometricsSybilResistanceCircuitId,
   v3ZKPassportSybilResistanceCircuitId,
-  ePassportIssuerMerkleRoot,
   zeronymCleanHandsEthSignSchemaId,
   zeronymRelayerAddress,
   zeronymCleanHandsEthSignSchemaIdTestnet,
@@ -129,63 +127,6 @@ export async function sybilResistanceGovIdSBT(req, res) {
     logWithTimestamp(
       "sybilResistanceGovId: Encountered error while calling smart contract. Exiting"
     );
-    return res.status(500).json({ error: "An unexpected error occured" });
-  }
-}
-
-export async function sybilResistanceEPassportSBT(req, res) {
-  try {
-    const result = parseV3SbtParams(req);
-    if (result.error) return res.status(400).json({ error: result.error });
-    const { address, actionId } = result;
-
-    // Check blocklist first
-    const blockListResult = await blocklistGetAddress(address);
-    if (blockListResult.Item) {
-      return res.status(200).json({ isUnique: false });
-    }
-
-    // Check v3 contract for ePassport SBT
-    try {
-      const hubV3Contract = new ethers.Contract(
-        hubV3Address,
-        HubV3ABI,
-        providers.optimism
-      );
-
-      const sbt = await hubV3Contract.getSBT(
-        address,
-        v3EPassportSybilResistanceCircuitId
-      );
-
-      const publicValues = sbt[1];
-      const merkleRoot = publicValues[2].toHexString();
-      const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
-      const isRevoked = sbt[2];
-
-      const isUnique =
-        merkleRoot === ePassportIssuerMerkleRoot && !isRevoked && !isExpired;
-
-      if (isUnique) {
-        const signature = sign(v3EPassportSybilResistanceCircuitId, actionId, address);
-        return res.status(200).json({
-          isUnique,
-          signature,
-          circuitId: v3EPassportSybilResistanceCircuitId,
-          expirationDate: sbt[0].toNumber(),
-        });
-      }
-
-      return res.status(200).json({ isUnique });
-    } catch (err) {
-      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
-        return res.status(200).json({ isUnique: false });
-      }
-
-      throw err;
-    }
-  } catch (err) {
-    console.log(err);
     return res.status(500).json({ error: "An unexpected error occured" });
   }
 }
