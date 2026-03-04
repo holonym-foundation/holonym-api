@@ -23,6 +23,11 @@ We plan to support more chains in the future. If you would like to use Holonym o
 - **GET** `/snapshot-strategies/sybil-resistance/biometrics`
 - **GET** `/attestation/attestor`
 - **GET** `/attestation/sbts/gov-id`
+- **GET** `/attestation/sbts/e-passport`
+- **GET** `/attestation/sbts/zk-passport`
+- **GET** `/attestation/sbts/phone`
+- **GET** `/attestation/sbts/biometrics`
+- **GET** `/attestation/sbts/clean-hands`
 - **GET** `/sandbox/attestation/sbts/clean-hands`
 - **GET** `/sandbox/attestation/attestor`
 
@@ -34,7 +39,7 @@ We plan to support more chains in the future. If you would like to use Holonym o
 
   | name              | description                                  | type   | in    | required |
   | ----------------- | -------------------------------------------- | ------ | ----- | -------- |
-  | `credential-type` | 'kyc', 'epassport', 'phone', or 'biometrics' | string | path  | true     |
+  | `credential-type` | 'kyc', 'epassport', 'zk-passport', 'phone', or 'biometrics' | string | path  | true     |
   | `address`         | User's blockchain address                    | string | query | true     |
 
 - Example
@@ -80,7 +85,7 @@ See the following documentation [How to get user's proofs](https://holonym.gitbo
 
   | name              | description                                     | type   | in    | required |
   | ----------------- | ----------------------------------------------- | ------ | ----- | -------- |
-  | `credential-type` | 'gov-id', 'epassport', 'phone', or 'biometrics' | string | path  | true     |
+  | `credential-type` | 'gov-id', 'epassport', 'phone', or 'biometrics' (gov-id also checks zk-passport as fallback) | string | path  | true     |
   | `network`         | 'optimism' or 'base-sepolia'                    | string | path  | true     |
   | `user`            | User's blockchain address                       | string | query | true     |
   | `action-id`       | Action ID                                       | string | query | true     |
@@ -418,6 +423,47 @@ Returns `isUnique`, a boolean indicating whether the user is unique for the give
     ```JSON
     {
       "isUnique" : false,
+    }
+    ```
+
+### **GET** `/attestation/sbts/zk-passport?action-id=<action-id>&address=<user-address>`
+
+Returns `isUnique`, a boolean indicating whether the user is unique for the given action ID using ZK Passport (passport verified via zero-knowledge proof), and (only if the user is unique) `signature`, the attestor's personal_sign signature.
+
+- Parameters
+
+  | name        | description                       | type   | in    | required |
+  | ----------- | --------------------------------- | ------ | ----- | -------- |
+  | `address`   | User's blockchain address          | string | query | true     |
+  | `action-id` | Action ID (defaults to 123456789)  | string | query | false    |
+
+- Example
+
+  ```JavaScript
+  const actionId = 123456789
+  const userAddress = '0xdbd6b2c02338919EdAa192F5b60F5e5840A50079'
+  const resp = await fetch(`https://api.holonym.io/attestation/sbts/zk-passport?action-id=${actionId}&address=${userAddress}`)
+  const { isUnique, signature, circuitId } = await resp.json();
+  ```
+
+- Responses
+
+  - 200
+
+    ```JSON
+    {
+      "isUnique" : true,
+      "signature": "0x123...",
+      "circuitId": "0x...",
+      "expirationDate": 1735689600
+    }
+    ```
+
+  - 200
+
+    ```JSON
+    {
+      "isUnique" : false
     }
     ```
 

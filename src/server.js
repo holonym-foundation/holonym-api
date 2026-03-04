@@ -38,10 +38,29 @@ app.use("/sandbox/attestation", sandboxSbtAttestation);
 app.get("/", (req, res) => {
   console.log(`${new Date().toISOString()} GET /`);
   const routes = [
-    "GET /residence/country/us",
-    "GET /sybil-resistance/gov-id",
+    "GET /sbts/kyc",
+    "GET /sbts/epassport",
+    "GET /sbts/zk-passport",
+    "GET /sbts/phone",
+    "GET /sbts/biometrics",
+    "GET /sybil-resistance/gov-id/:network",
+    "GET /sybil-resistance/epassport/:network",
+    "GET /sybil-resistance/phone/:network",
+    "GET /sybil-resistance/biometrics/:network",
+    "GET /attestation/sbts/gov-id",
+    "GET /attestation/sbts/e-passport",
+    "GET /attestation/sbts/zk-passport",
+    "GET /attestation/sbts/phone",
+    "GET /attestation/sbts/biometrics",
+    "GET /attestation/sbts/clean-hands",
+    "GET /attestation/attestor",
+    "GET /residence/country/us/:network",
     "GET /snapshot-strategies/residence/country/us",
-    "GET /snapshot-strategies/sybil-resistance",
+    "GET /snapshot-strategies/sybil-resistance/gov-id",
+    "GET /snapshot-strategies/sybil-resistance/phone",
+    "GET /snapshot-strategies/sybil-resistance/biometrics",
+    "GET /sandbox/attestation/sbts/clean-hands",
+    "GET /sandbox/attestation/attestor",
   ];
   res.status(200).json({ routes: routes });
 });

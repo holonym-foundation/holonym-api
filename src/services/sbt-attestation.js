@@ -179,10 +179,7 @@ export async function sybilResistanceEPassportSBT(req, res) {
       return res.status(200).json({ isUnique });
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired or does not exist")) {
-        return res.status(200).json({
-          hasValidSbt: false,
-          message: "SBT is expired or does not exist",
-        });
+        return res.status(200).json({ isUnique: false });
       }
 
       throw err;
