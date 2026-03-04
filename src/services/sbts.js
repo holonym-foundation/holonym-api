@@ -15,9 +15,9 @@ import {
   biometricsIssuerAddress,
   v3KYCSybilResistanceCircuitId,
   v3PhoneSybilResistanceCircuitId,
-  v3EPassportSybilResistanceCircuitId,
   v3BiometricsSybilResistanceCircuitId,
-  ePassportIssuerMerkleRoot,
+  v3ZKPassportSybilResistanceCircuitId,
+  zkPassportIssuerAddress,
 } from "../constants/misc.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
 
@@ -167,7 +167,7 @@ export async function getHasValidBiometricsSbt(req, res) {
   }
 }
 
-export async function getHasValidEPassportSbt(req, res) {
+export async function getHasValidZkPassportSbt(req, res) {
   try {
     const result = parseV3SbtParams(req);
     if (result.error) return res.status(400).json({ error: result.error });
@@ -188,21 +188,24 @@ export async function getHasValidEPassportSbt(req, res) {
       providers.optimism
     );
 
-    // Check v3 contract for ePassport SBT
+    // Check v3 contract for ZK Passport SBT
     try {
       const sbt = await hubV3Contract.getSBT(
         address,
-        v3EPassportSybilResistanceCircuitId
+        v3ZKPassportSybilResistanceCircuitId
       );
 
       const publicValues = sbt[1];
-      const merkleRoot = publicValues[2].toHexString();
+      const actionIdInSBT = publicValues[2].toString();
+      const issuerAddress = publicValues[4].toHexString();
+
+      const actionIdIsValid = actionId == actionIdInSBT;
+      const issuerIsValid = zkPassportIssuerAddress == issuerAddress;
       const isExpired = new Date(sbt[0].toNumber()) < Date.now() / 1000;
       const isRevoked = sbt[2];
 
       return res.status(200).json({
-        hasValidSbt:
-          merkleRoot === ePassportIssuerMerkleRoot && !isRevoked && !isExpired,
+        hasValidSbt: actionIdIsValid && issuerIsValid && !isRevoked && !isExpired,
         expirationDate: sbt[0].toNumber(),
       });
     } catch (err) {
@@ -218,7 +221,7 @@ export async function getHasValidEPassportSbt(req, res) {
   } catch (err) {
     console.log(err);
     logWithTimestamp(
-      "getHasValidEPassportSbt: Encountered error while calling smart contract. Exiting"
+      "getHasValidZkPassportSbt: Encountered error while calling smart contract. Exiting"
     );
     return res.status(500).json({ error: "An unexpected error occured" });
   }

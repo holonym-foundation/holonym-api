@@ -16,9 +16,9 @@ import {
   biometricsIssuerAddress,
   v3KYCSybilResistanceCircuitId,
   v3PhoneSybilResistanceCircuitId,
-  v3EPassportSybilResistanceCircuitId,
   v3BiometricsSybilResistanceCircuitId,
-  ePassportIssuerMerkleRoot,
+  v3ZKPassportSybilResistanceCircuitId,
+  zkPassportIssuerAddress,
 } from "../constants/misc.js";
 import AntiSybilStoreABI from "../constants/AntiSybilStoreABI.js";
 import HubV3ABI from "../constants/HubV3ABI.js";
@@ -112,32 +112,6 @@ async function sybilResistanceGovIdNear(req, res) {
     });
   } catch (err) {
     if ((err?.message ?? "").includes("SBT does not exist")) {
-      // Do nothing
-    } else {
-      console.log(err);
-      return res.status(500).json({ error: "An unexpected error occured" });
-    }
-  }
-
-  // Check for ePassport SBT
-  try {
-    const sbt = await viewHubV3Sbt(
-      user,
-      new Array(...ethers.utils.arrayify(v3EPassportSybilResistanceCircuitId))
-    );
-
-    const expiry = sbt.expiry;
-    const publicValues = sbt.public_values;
-
-    const expired = expiry < Date.now() / 1000;
-    const validRoot =
-      ethers.utils.hexlify(publicValues[2]) === ePassportIssuerMerkleRoot;
-
-    return res.status(200).json({
-      result: !expired && validRoot,
-    });
-  } catch (err) {
-    if ((err?.message ?? "").includes("SBT does not exist")) {
       return res.status(200).json({ result: false });
     }
 
@@ -226,23 +200,16 @@ async function sybilResistanceGovIdStellar(req, res) {
     v3KYCSybilResistanceCircuitId
   );
 
-  const ePassportSbtResult = await getStellarSBTByAddress(
-    address,
-    v3EPassportSybilResistanceCircuitId
-  );
-
-  if (kycSbtResult?.sbt || ePassportSbtResult?.sbt) {
+  if (kycSbtResult?.sbt) {
     const kycActionId = kycSbtResult?.sbt?.public_values?.[2];
-    const ePassportActionId = ePassportSbtResult?.sbt?.public_values?.[2];
-    const actionIdIsValid = kycActionId == actionId || ePassportActionId == actionId;
+    const actionIdIsValid = kycActionId == actionId;
 
     return res.status(200).json({ result: actionIdIsValid });
   }
 
-  // TODO: Return more granular error messages based on kycSbtResult.status and ePassportSbtResult.status
   return res.status(200).json({
     result: false,
-    details: `No KYC or ePassport SBT found for address ${address}`,
+    details: `No KYC SBT found for address ${address}`,
   });
 }
 
@@ -389,20 +356,26 @@ async function sybilResistanceGovId(req, res) {
       // Do nothing
     }
 
-    // Check v3 contract for ePassport SBT
+    // Check v3 contract for ZK Passport SBT
     try {
       const sbt = await hubV3Contract.getSBT(
         address,
-        v3EPassportSybilResistanceCircuitId
+        v3ZKPassportSybilResistanceCircuitId
       );
 
       const publicValues = sbt[1];
-      const merkleRoot = publicValues[2].toHexString();
+      const actionIdInSBT = publicValues[2].toString();
+      const issuerAddress = publicValues[4].toHexString();
 
-      return res.status(200).json({
-        result: merkleRoot === ePassportIssuerMerkleRoot,
-        expirationDate: sbt[0].toNumber(),
-      });
+      const actionIdIsValid = actionId == actionIdInSBT;
+      const issuerIsValid = zkPassportIssuerAddress == issuerAddress;
+
+      if (actionIdIsValid && issuerIsValid) {
+        return res.status(200).json({
+          result: true,
+          expirationDate: sbt[0].toNumber(),
+        });
+      }
     } catch (err) {
       if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
         return res.status(200).json({ result: false });
@@ -410,73 +383,12 @@ async function sybilResistanceGovId(req, res) {
 
       throw err;
     }
+
+    return res.status(200).json({ result: false });
   } catch (err) {
     console.log(err);
     logWithTimestamp(
       "sybilResistanceGovId: Encountered error while calling smart contract. Exiting"
-    );
-    return res.status(500).json({ error: "An unexpected error occured" });
-  }
-}
-
-async function sybilResistanceEPassport(req, res) {
-  try {
-    const address = req.query.user;
-    const actionId = req.query["action-id"];
-    if (!address) {
-      return res
-        .status(400)
-        .json({ error: "Request query params do not include user address" });
-    }
-    if (!actionId) {
-      return res
-        .status(400)
-        .json({ error: "Request query params do not include action-id" });
-    }
-    if (!assertValidAddress(address)) {
-      return res.status(400).json({ error: "Invalid user address" });
-    }
-    if (!parseInt(actionId)) {
-      return res.status(400).json({ error: "Invalid action-id" });
-    }
-
-    // Check blocklist first
-    const blockListResult = await blocklistGetAddress(address);
-    if (blockListResult.Item) {
-      return res.status(200).json({ result: false });
-    }
-
-    const network = req.params.network;
-
-    const provider = providers[network];
-
-    // Check v3 contract
-    try {
-      const hubV3Contract = new ethers.Contract(hubV3Address, HubV3ABI, provider);
-
-      const sbt = await hubV3Contract.getSBT(
-        address,
-        v3EPassportSybilResistanceCircuitId
-      );
-
-      const publicValues = sbt[1];
-      const merkleRoot = publicValues[2].toHexString();
-
-      return res.status(200).json({
-        result: merkleRoot === ePassportIssuerMerkleRoot,
-        expirationDate: sbt[0].toNumber(),
-      });
-    } catch (err) {
-      if ((err.errorArgs?.[0] ?? "").includes("SBT is expired")) {
-        return res.status(200).json({ result: false });
-      }
-
-      throw err;
-    }
-  } catch (err) {
-    console.log(err);
-    logWithTimestamp(
-      "sybilResistanceEPassport: Encountered error while calling smart contract. Exiting"
     );
     return res.status(500).json({ error: "An unexpected error occured" });
   }
@@ -652,7 +564,6 @@ async function sybilResistanceBiometrics(req, res) {
 
 export {
   sybilResistanceGovId,
-  sybilResistanceEPassport,
   sybilResistancePhone,
   sybilResistanceBiometrics,
 };

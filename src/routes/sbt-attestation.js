@@ -1,7 +1,7 @@
 import express from "express";
 import {
   sybilResistanceGovIdSBT,
-  sybilResistanceEPassportSBT,
+  sybilResistanceZkPassportSBT,
   sybilResistancePhoneSBT,
   sybilResistanceBiometricsSBT,
   cleanHandsAttestation,
@@ -13,7 +13,7 @@ import {
 const router = express.Router();
 
 router.get("/sbts/gov-id/", sybilResistanceGovIdSBT);
-router.get("/sbts/e-passport/", sybilResistanceEPassportSBT);
+router.get("/sbts/zk-passport/", sybilResistanceZkPassportSBT);
 router.get("/sbts/phone/", sybilResistancePhoneSBT);
 router.get("/sbts/biometrics/", sybilResistanceBiometricsSBT);
 router.get("/sbts/clean-hands", cleanHandsAttestation);
